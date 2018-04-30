@@ -42,8 +42,7 @@ class barcode_submission_form extends moodleform {
      * @return void
      */
     public function definition() {
-        global $CFG;
-
+        $ontimeavailable = get_config('assignsubmission_physical', 'submitontime');
         $mform = $this->_form;
 
         if (! empty($this->_customdata['error'])) {
@@ -54,7 +53,8 @@ class barcode_submission_form extends moodleform {
 
         if (! empty($this->_customdata['success'])) {
             $mform->addElement('html', '<div class="form-group bc-text-center bc-has-success" id="feedback-group">');
-            $mform->addElement('html', '<span class="form-control-feedback" id="feedback">'.$this->_customdata['success'].'</span>');
+            $mform->addElement('html',
+                               '<span class="form-control-feedback" id="feedback">'.$this->_customdata['success'].'</span>');
             $mform->addElement('html', '</div>');
         }
 
@@ -71,8 +71,17 @@ class barcode_submission_form extends moodleform {
         $mform->setType('barcode', PARAM_ALPHANUM);
         $mform->setDefault('barcode', $this->_customdata['barcode']);
         $mform->setType('cmid', PARAM_INT);
-        $mform->addElement('html', '<div style="margin: 0 auto">');
+        $mform->addElement('html', '<div class="bc-form">');
         $mform->addGroup($formgroup,  'barcodegroup', get_string('barcode', 'local_barcode'), ' ',  false);
+        $mform->addElement('advcheckbox', 'reverttodraft', get_string('reverttodraft', 'local_barcode'), '', '', array(0, 1));
+        if ($ontimeavailable) {
+            $mform->addElement('advcheckbox',
+                               'submitontime',
+                               get_string('allowsubmitontime', 'local_barcode'),
+                               '',
+                               '',
+                               array(0, 1));
+        }
         $mform->addElement('html', '</div>');
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);
         $this->add_action_buttons(true, get_string('submit', 'local_barcode'));

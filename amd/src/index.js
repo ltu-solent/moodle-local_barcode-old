@@ -1,10 +1,23 @@
-define(['jquery'], function($) {
+define(['jquery', 'core/str'], function($, str) {
     // Initial variables.
     var cmid,
+        link,
         code,
+        message    = '',
         assignment = '-',
-        submitted  = 'Not Submitted',
-        message    = '';
+        assignmentdescription = '',
+        course,
+        duedate,
+        idformat,
+        studentid,
+        studentname,
+        submissiontime,
+        submitted = 'Not Submitted',
+        islate,
+        revert = '0',
+        ontime = '0',
+        hasReverted = 0,
+        strings = [];
 
     /**
      * When the page loads then focus on the barcode input and listen for keypresses.
@@ -13,8 +26,25 @@ define(['jquery'], function($) {
      */
     function load() {
         $('#id_barcode').focus();
-        document.getElementById('id_barcode').addEventListener('keypress', preventSubmission, false);
-        createTable();
+        document.getElementById('id_barcode').addEventListener('keypress', preventOnEnterSubmission, false);
+        document.getElementById('id_submitbutton').addEventListener('click', preventSubmission, false);
+
+        var langStrings = str.get_strings([
+            {key: 'assignmentdetails', component: 'local_barcode'},
+            {key: 'barcodes', component: 'local_barcode'},
+            {key: 'draft', component: 'local_barcode'},
+            {key: 'draftandsubmissionerror', component: 'local_barcode'},
+            {key: 'due', component: 'local_barcode'},
+            {key: 'notsubmitted', component: 'local_barcode'},
+            {key: 'scanned', component: 'local_barcode'},
+            {key: 'student', component: 'local_barcode'},
+            {key: 'submitted', component: 'local_barcode'}
+        ]);
+
+        $.when(langStrings).done(function(localizedStrings) {
+            strings = localizedStrings;
+            createTable();
+        });
     }
 
     /**
@@ -28,8 +58,14 @@ define(['jquery'], function($) {
 
         var barcode = getBarcode();
 
+        if (barcode && !formIsValid()) {
+            $('#feedback').html(strings[3]);
+            $('#feedback-group').addClass('bc-has-inform');
+            $('#feedback-group').removeClass('bc-has-danger');
+            $('#feedback-group').removeClass('bc-has-success');
+        }
         // Make the ajax call to the webservice.
-        if (barcode) {
+        if (barcode && formIsValid()) {
             saveBarcode(barcode);
         }
         $('#id_barcode').focus();
@@ -59,14 +95,44 @@ define(['jquery'], function($) {
      * @param  {object} ev      the keypress event
      * @return {boolean}
      */
-    function preventSubmission(ev) {
+    function preventOnEnterSubmission(ev) {
         var key = ev.which || ev.keyCode;
         if (key === 13) {
             ev.stopPropagation();
             ev.preventDefault();
+            setRevert();
+            setOnTime();
             submitBarcode(ev);
         }
         return false;
+    }
+
+    /**
+     * Prevent the form from submmitting while the user is submitting the form by interacting
+     * with the submit button
+     *
+     * @param  {object} ev   The submit event
+     * @return {boolean}
+     */
+    function preventSubmission(ev) {
+        ev.stopPropagation();
+        ev.preventDefault();
+        setRevert();
+        setOnTime();
+        submitBarcode(ev);
+        return false;
+    }
+
+    /**
+     * Prevent the user submitting the form if both revert to draft and allow late submission
+     * has been selected, you can't have both
+     * @return {boolean} Whether or not the form is valid
+     */
+    function formIsValid() {
+        if (revert !== '0' && ontime !== '0') {
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -76,22 +142,46 @@ define(['jquery'], function($) {
      * @return {void}
      */
     function saveBarcode(barcode) {
+        var uploadUrl = 'service/upload.php?barcode=';
+        if (link) {
+            uploadUrl = '../service/upload.php?barcode=';
+        }
         $.ajax({
             type: "POST",
-            url: 'service/upload.php?barcode=' + barcode + '&id=' + cmid,
+            url: uploadUrl + barcode + '&id=' + cmid + '&revert=' + revert + '&ontime=' + ontime,
             data: {
                 barcode: barcode
             },
             success: function(response) {
-                message    = response.data.message;
-                code       = response.data.code;
-                assignment = response.data.assignment;
+                code           = response.data.code;
+                message        = response.data.message;
+                assignment     = response.data.assignment;
+                assignmentdescription = response.data.assignmentdescription;
+                course         = response.data.course;
+                duedate        = response.data.duedate;
+                idformat       = response.data.idformat;
+                studentid      = response.data.studentid;
+                studentname    = response.data.studentname;
+                submissiontime = response.data.submissiontime;
+                islate         = response.data.islate;
+                hasReverted    = response.data.reverted;
                 feedback();
+                resetRevert();
+                resetOnTime();
             },
             error: function(response) {
-                message    = response.data.message;
-                code       = response.data.code;
-                assignment = response.data.assignment;
+                code           = response.data.code;
+                message        = response.data.message;
+                assignment     = response.data.assignment;
+                assignmentdescription = response.data.assignmentdescription;
+                course         = response.data.course;
+                duedate        = response.data.duedate;
+                idformat       = response.data.idformat;
+                studentid      = response.data.studentid;
+                studentname    = response.data.studentname;
+                submissiontime = response.data.submissiontime;
+                islate         = response.data.islate;
+                hasReverted    = response.data.reverted;
                 feedback();
             },
             dataType: "json"
@@ -103,22 +193,35 @@ define(['jquery'], function($) {
      * @return {void}
      */
     function feedback() {
-        var feedback       = $('#feedback');
+        var feedback = $('#feedback');
         feedback.html(message);
 
         if (code === 200) {
             outputSubmittedCount();
-            submitted = 'Submitted';
-            $('#feedback-group').removeClass('bc-has-danger');
-            $('#feedback-group').addClass('bc-has-success');
-            addTableRow('success');
+            if (hasReverted) {
+                submitted = strings[2];
+                $('#feedback-group').addClass('bc-has-success');
+                $('#feedback-group').removeClass('bc-has-danger');
+                $('#feedback-group').removeClass('bc-has-inform');
+                addTableRow('revert');
+            } else {
+                submitted = strings[8];
+                $('#feedback-group').removeClass('bc-has-danger');
+                $('#feedback-group').removeClass('bc-has-inform');
+                $('#feedback-group').addClass('bc-has-success');
+                addTableRow('success');
+            }
             resetBarcode();
         }
 
-        if (code !== 200) {
-            submitted  = 'Not Submitted';
+        if (code === 404) {
             assignment = '-';
+        }
+
+        if (code !== 200) {
+            submitted  = strings[6];
             $('#feedback-group').removeClass('bc-has-success');
+            $('#feedback-group').removeClass('bc-has-inform');
             $('#feedback-group').addClass('bc-has-danger');
             addTableRow('fail');
         }
@@ -137,10 +240,10 @@ define(['jquery'], function($) {
 
         var thead = table.append('<thead></thead>');
         var header = thead.append('<tr></tr>');
-        header.html('<th colspan="8">Barcodes - (<span id="id_count">' +
-                '0</span> Scanned)</th>' +
-                '<th colspan="17">Assignment</th>' +
-                '<th colspan="5">Submitted (<span id="submit_count">0</span>)</th>');
+        header.html('<th colspan="8">' + strings[1] + ' - (<span id="id_count">' +
+                '0</span> ' + strings[6] + ')</th>' +
+                '<th colspan="17">' + strings[0] + '</th>' +
+                '<th colspan="5">' + strings[8] + '(<span id="submit_count">0</span>)</th>');
         table.append('<tbody id="tbody"></tbody>');
 
         main.append(table);
@@ -151,12 +254,7 @@ define(['jquery'], function($) {
      * @param {string} css  The css class condition
      */
     function addTableRow(css) {
-        var cssClass = 'bc-fail';
-
-        if (css === 'success') {
-            cssClass = 'bc-success';
-        }
-
+        var cssClass = 'bc-' + css;
         var colspans = [8, 17, 5];
         var arr = getData();
         var tbody = $('#tbody');
@@ -165,10 +263,9 @@ define(['jquery'], function($) {
         for (var i = 0; i <= 2; i++) {
             var cell = $('<td></td>');
             var span = $('<span></span>');
-            var content = document.createTextNode(arr[i]);
 
             cell.attr('colspan', colspans[i]);
-            span.append(content);
+            span.html(arr[i]);
             cell.append(span);
 
             if (i === 2)  {
@@ -177,7 +274,7 @@ define(['jquery'], function($) {
             }
             row.append(cell);
         }
-        tbody.append(row);
+        tbody.prepend(row);
     }
 
     /**
@@ -185,7 +282,21 @@ define(['jquery'], function($) {
      * @return {array} The data in an array
      */
     function getData() {
-        return [getBarcode(), assignment, submitted];
+        var submissionClass = 'bc-ontime';
+        if (islate) {
+            submissionClass = 'bc-islate';
+        }
+        return [
+            getBarcode(),
+            assignment + '<br />' +
+            '<small>' + assignmentdescription.substring(0, 30) + '</small><br />' +
+            '<small>' + course + '</small><br />' +
+            '<small>' + strings[7] + ': ' + studentname + ' / ' + idformat + ': ' + studentid + '</small><br />' +
+            '<small>' + strings[4] + ': ' + duedate + '&nbsp; ' + strings[6] + ': <span class="' +
+                submissionClass + '">' + submissiontime +
+            '</span></small><br />',
+            submitted
+        ];
     }
 
     /**
@@ -204,6 +315,42 @@ define(['jquery'], function($) {
     function outputSubmittedCount() {
         $('#submit_count').html(submittedBarcodes());
         return false;
+    }
+
+    /**
+     * Checks whether or not the submission is to revert to draft or not
+     * @return {[type]} [description]
+     */
+    function setRevert() {
+        if (document.getElementById('id_reverttodraft').checked === true) {
+            revert = '1';
+        } else {
+            revert = '0';
+        }
+    }
+
+    /**
+     * Reset the revert to draft checkbox
+     * @return {void}
+     */
+    function resetRevert() {
+        document.getElementById('id_reverttodraft').checked = false;
+    }
+
+    function setOnTime() {
+        if (document.getElementById('id_submitontime').checked === true) {
+            ontime = '1';
+        } else {
+            ontime = '0';
+        }
+    }
+
+    /**
+     * Reset the allow late submission checkbox
+     * @return {void}
+     */
+    function resetOnTime() {
+        document.getElementById('id_submitontime').checked = false;
     }
 
     // Closure to calculate the total number of scanned barcodes
@@ -239,12 +386,13 @@ define(['jquery'], function($) {
     })();
 
     /**
-     * On initialisation set the token and call the load function
+     * On initialisation call the load function and set the course module id and the type of url to use on ajax call.
      */
     return {
-        init: function(id) {
+        init: function(id, direct) {
             load();
             cmid = id;
+            link = direct;
         },
     };
 });
