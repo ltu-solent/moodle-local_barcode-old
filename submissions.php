@@ -50,7 +50,9 @@ $error   = '';
 $success = '';
 $barcode = '';
 $isopen  = true;
-
+// $assign = new barcode_assign($context, $cm, $course);var_dump($assign->get_instance());die;
+// $conditions = array('plugin' => 'assignsubmission_physical', 'name' => 'usernamesettings');
+        // $username = $DB->get_record('config_plugins', $conditions, 'value', IGNORE_MISSING);var_dump($username);die;
 if ($mform->is_cancelled()) {
     $url = new moodle_url('/mod/assign/view.php', ['id' => $id]);
     redirect($url);

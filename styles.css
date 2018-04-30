@@ -79,3 +79,11 @@ td:nth-child(3) {
 .bc-fail:after {
   background: url([[pix:local_barcode|bc-fail]]) no-repeat;
 }
+
+.bc-islate {
+  color: #d9534f;
+}
+
+.bc-ontime {
+  color: #5cb85c;
+}

@@ -161,5 +161,3 @@ function notify_graders(stdClass $submission, assign $assign) {
         }
     }
 }
-
-

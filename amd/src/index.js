@@ -2,9 +2,18 @@ define(['jquery'], function($) {
     // Initial variables.
     var cmid,
         code,
+        message    = '',
         assignment = '-',
-        submitted  = 'Not Submitted',
-        message    = '';
+        assignmentdescription = '',
+        course,
+        duedate,
+        idformat,
+        participantid,
+        studentid,
+        studentname,
+        submissiontime,
+        submitted = 'Not Submitted',
+        islate;
 
     /**
      * When the page loads then focus on the barcode input and listen for keypresses.
@@ -83,15 +92,33 @@ define(['jquery'], function($) {
                 barcode: barcode
             },
             success: function(response) {
-                message    = response.data.message;
-                code       = response.data.code;
-                assignment = response.data.assignment;
+                code           = response.data.code;
+                message        = response.data.message;
+                assignment     = response.data.assignment;
+                assignmentdescription = response.data.assignmentdescription;
+                course         = response.data.course;
+                duedate        = response.data.duedate;
+                idformat       = response.data.idformat;
+                participantid  = response.data.participantid;
+                studentid      = response.data.studentid;
+                studentname    = response.data.studentname;
+                submissiontime = response.data.submissiontime;
+                islate         = response.data.islate;
                 feedback();
             },
             error: function(response) {
-                message    = response.data.message;
-                code       = response.data.code;
-                assignment = response.data.assignment;
+                code           = response.data.code;
+                message        = response.data.message;
+                assignment     = response.data.assignment;
+                assignmentdescription = response.data.assignmentdescription;
+                course         = response.data.course;
+                duedate        = response.data.duedate;
+                idformat       = response.data.idformat;
+                participantid  = response.data.participantid;
+                studentid      = response.data.studentid;
+                studentname    = response.data.studentname;
+                submissiontime = response.data.submissiontime;
+                islate         = response.data.islate;
                 feedback();
             },
             dataType: "json"
@@ -115,9 +142,12 @@ define(['jquery'], function($) {
             resetBarcode();
         }
 
+        if (code === 404) {
+            assignment = '-';
+        }
+
         if (code !== 200) {
             submitted  = 'Not Submitted';
-            assignment = '-';
             $('#feedback-group').removeClass('bc-has-success');
             $('#feedback-group').addClass('bc-has-danger');
             addTableRow('fail');
@@ -139,7 +169,7 @@ define(['jquery'], function($) {
         var header = thead.append('<tr></tr>');
         header.html('<th colspan="8">Barcodes - (<span id="id_count">' +
                 '0</span> Scanned)</th>' +
-                '<th colspan="17">Assignment</th>' +
+                '<th colspan="17">Assignment Details</th>' +
                 '<th colspan="5">Submitted (<span id="submit_count">0</span>)</th>');
         table.append('<tbody id="tbody"></tbody>');
 
@@ -165,10 +195,10 @@ define(['jquery'], function($) {
         for (var i = 0; i <= 2; i++) {
             var cell = $('<td></td>');
             var span = $('<span></span>');
-            var content = document.createTextNode(arr[i]);
+            // var content = document.createTextNode(arr[i]);
 
             cell.attr('colspan', colspans[i]);
-            span.append(content);
+            span.html(arr[i]);//append(content);
             cell.append(span);
 
             if (i === 2)  {
@@ -177,7 +207,7 @@ define(['jquery'], function($) {
             }
             row.append(cell);
         }
-        tbody.append(row);
+        tbody.prepend(row);
     }
 
     /**
@@ -185,7 +215,21 @@ define(['jquery'], function($) {
      * @return {array} The data in an array
      */
     function getData() {
-        return [getBarcode(), assignment, submitted];
+        var submissionClass = 'bc-ontime';
+        if (islate) {
+            submissionClass = 'bc-islate';
+        }
+        return [
+            getBarcode(),
+            assignment + '<br />' +
+            '<small>' + assignmentdescription.substring(0, 30) + '</small><br />' +
+            '<small>' + course + '</small><br />' +
+            '<small>Student: ' + studentname + ' / ' + idformat + ': ' + studentid + '</small><br />' +
+            '<small>Due: ' + duedate + '&nbsp; Scanned: <span class="' +
+                submissionClass + '">' + submissiontime +
+            '</span></small><br />',
+            submitted
+        ];
     }
 
     /**

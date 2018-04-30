@@ -23,18 +23,20 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['addbuttonlabel']     = 'Add';
-$string['alreadysubmitted']   = 'This submission has already been submitted';
-$string['barcode']            = 'Barcode';
-$string['barcodeempty']       = 'Barcode field was empty';
-$string['barcodeheading']     = 'Upload physical submisisons';
-$string['barcodenotfound']    = 'Barcode not found';
-$string['barcodesameday']     = 'Barcode already scanned today';
-$string['catchall']           = "418 I'm a teapot! Whoops something's gone wrong somewhere ¯\_(ツ)_/¯";
-$string['pageheading']        = 'Upload physical submisisons';
-$string['pluginname']         = 'Barcode Scanning';
-$string['requiredbarcode']    = 'At least 1 barcode is required.';
-$string['submissionclosed']   = 'The assignment is closed for this submissions';
-$string['submissionnotfound'] = 'There\'s an error somewhere. This submission was not found in Moodle';
-$string['submissionsaved']    = 'Submission saved';
-$string['submit']             = 'Submit';
+$string['addbuttonlabel']        = 'Add';
+$string['alreadysubmitted']      = 'This submission has already been submitted';
+$string['barcode']               = 'Barcode';
+$string['barcodeempty']          = 'Barcode field was empty';
+$string['barcodeheading']        = 'Upload physical submisisons';
+$string['barcodenotfound']       = 'Barcode not found';
+$string['barcodesameday']        = 'Barcode already scanned today';
+$string['catchall']              = '418 I\'m a teapot! Whoops something\'s gone wrong somewhere ¯\_(ツ)_/¯';
+$string['missingstudentid'] 	 = 'The student identifier is missing for this user.';
+$string['missinguseridentifier'] = 'There\'s an error with this plugin\'s admin settings. Please ask an admin to check the User Identifier.';
+$string['pageheading']        	 = 'Upload physical submisisons';
+$string['pluginname']         	 = 'Barcode Scanning';
+$string['requiredbarcode']    	 = 'At least 1 barcode is required.';
+$string['submissionclosed']   	 = 'The assignment is closed for this submissions';
+$string['submissionnotfound'] 	 = 'There\'s an error somewhere. This submission was not found in Moodle';
+$string['submissionsaved']    	 = 'Submission saved';
+$string['submit']             	 = 'Submit';
