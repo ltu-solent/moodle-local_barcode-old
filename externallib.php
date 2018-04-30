@@ -56,16 +56,13 @@ class local_barcode_external extends external_api {
                 'studentname'           => '',
                 'idformat'              => '',
                 'studentid'             => '',
-                'participantid'         => '',
+                'participantid'         => 0,
                 'duedate'               => '',
                 'submissiontime'        => '',
                 'assignmentdescription' => '',
                 'islate'                => 0
             ),
         );
-
-        $now       = new DateTime();
-        $timestamp = $now->getTimestamp();
 
         // Get the user name setting from plugin configs table
         $conditions = array('plugin' => 'assignsubmission_physical', 'name' => 'usernamesettings');
@@ -101,10 +98,7 @@ class local_barcode_external extends external_api {
              LEFT JOIN {assign_user_mapping} m ON b.userid = m.userid AND b.assignmentid = m.assignment
                  WHERE b.barcode = ?";
 
-        $params = array('barcode' => $barcode);
-
         if ($record = $DB->get_record_sql($sql, $params, IGNORE_MISSING)) {
-            $sameday = false;
             // Get the username details
             if (! $userdetails = get_username(array($record->userid, $username->value))) {
                 $response['data']['code']    = 404;
@@ -120,6 +114,9 @@ class local_barcode_external extends external_api {
 
             $submission = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING);
 
+            $now       = new DateTime();
+            $timestamp = $now->getTimestamp();
+
             $response['data']['assignment']            = $record->assignment;
             $response['data']['course']                = $record->course;
             $response['data']['studentname']           = $record->firstname . ' ' . $record->lastname;
@@ -127,7 +124,7 @@ class local_barcode_external extends external_api {
             $response['data']['studentid']             = $userdetails->data;
             $response['data']['participantid']         = $record->participantid;
             $response['data']['duedate']               = date('jS F, \'y G:i', $record->duedate);
-            $response['data']['submissiontime']        = date('jS F, \'y g:i:s a', $timestamp);($timestamp);
+            $response['data']['submissiontime']        = date('jS F, \'y g:i:s a', $timestamp);
             $response['data']['assignmentdescription'] = strip_tags($record->assignmentdescription);
             $response['data']['islate']                = (($record->duedate - $timestamp) < 0) ? 1 : 0;
 
@@ -153,7 +150,6 @@ class local_barcode_external extends external_api {
                 $diff = $now->diff($lastmodified)->format("%a");
 
                 if ($diff === '0') {
-                    $sameday = true;
                     $response['data']['code']    = 422;
                     $response['data']['message'] = get_string('barcodesameday', 'local_barcode');
                     return $response;
@@ -164,13 +160,12 @@ class local_barcode_external extends external_api {
                 return $response;
             }
 
-            if ($submission && ! $sameday) {
+            if ($submission) {
                 // Update the database with the submitted status.
                 $update               = new stdClass();
                 $update->id           = $submission->id;
                 $update->timemodified = $timestamp;
                 $update->status       = 'submitted';
-                $update->latest       = 1;
                 $DB->update_record('assign_submission', $update);
 
                 $response['data']['code']    = 200;

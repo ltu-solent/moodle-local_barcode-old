@@ -8,7 +8,6 @@ define(['jquery'], function($) {
         course,
         duedate,
         idformat,
-        participantid,
         studentid,
         studentname,
         submissiontime,
@@ -99,7 +98,6 @@ define(['jquery'], function($) {
                 course         = response.data.course;
                 duedate        = response.data.duedate;
                 idformat       = response.data.idformat;
-                participantid  = response.data.participantid;
                 studentid      = response.data.studentid;
                 studentname    = response.data.studentname;
                 submissiontime = response.data.submissiontime;
@@ -114,7 +112,6 @@ define(['jquery'], function($) {
                 course         = response.data.course;
                 duedate        = response.data.duedate;
                 idformat       = response.data.idformat;
-                participantid  = response.data.participantid;
                 studentid      = response.data.studentid;
                 studentname    = response.data.studentname;
                 submissiontime = response.data.submissiontime;
@@ -195,10 +192,9 @@ define(['jquery'], function($) {
         for (var i = 0; i <= 2; i++) {
             var cell = $('<td></td>');
             var span = $('<span></span>');
-            // var content = document.createTextNode(arr[i]);
 
             cell.attr('colspan', colspans[i]);
-            span.html(arr[i]);//append(content);
+            span.html(arr[i]);
             cell.append(span);
 
             if (i === 2)  {
