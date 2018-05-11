@@ -161,3 +161,65 @@ function notify_graders(stdClass $submission, assign $assign) {
         }
     }
 }
+
+function save_late_submission($barcoderecord, assign $assign) {
+    global $DB, $USER;
+
+    $response = array();
+
+    $sql = "SELECT b.assignmentid,
+                   b.groupid,
+                   b.userid,
+                   b.barcode,
+                   b.courseid,
+                   b.submissionid,
+                   a.name AS assignment,
+                   a.intro AS assignmentdescription,
+                   a.duedate,
+                   a.blindmarking,
+                   c.fullname AS course,
+                   u.firstname,
+                   u.lastname,
+                   m.id AS participantid,
+                   s.status
+              FROM {assignsubmission_barcode} b
+              JOIN {assign} a ON b.assignmentid = a.id
+              JOIN {course} c ON b.courseid = c.id
+              JOIN {user} u ON b.userid = u.id
+              JOIN {assign_submission} s ON b.submissionid = s.id
+         LEFT JOIN {assign_user_mapping} m ON b.userid = m.userid AND b.assignmentid = m.assignment
+             WHERE b.barcode = ?";
+
+    if ($submission = $DB->get_record_sql($sql, array('barcode' => $barcoderecord->barcode), IGNORE_MISSING)) {
+
+        if ($submission->status !== 'submitted') {
+            $update = new stdclass();
+            $update->id           = $submission->submissionid;
+            $update->timemodified = $submission->duedate;
+            $update->status       = 'submitted';
+            $DB->update_record('assign_submission', $update, false);
+
+            $response['data']['code']    = 200;
+            $response['data']['message'] = get_string('submissionontime', 'local_barcode');
+            return $response;
+        }
+
+        if ($submission->status === 'submitted') {
+            $response['data']['code']    = 422;
+            $response['data']['message'] = get_string('alreadysubmitted', 'local_barcode');
+            return $response;
+        }
+
+    }
+
+    if (! $submission) {
+        $response['data']['code']    = 404;
+        $response['data']['message'] = get_string('submissionnotfound', 'local_barcode');
+        return $response;
+    }
+
+    // A lovely little catch all for the blue moon occasion.
+    $response['data']['code']    = 418;
+    $response['data']['message'] = get_string('catchall', 'local_barcode');
+    return $response;
+}

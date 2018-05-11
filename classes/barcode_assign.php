@@ -107,4 +107,62 @@ class barcode_assign extends assign {
 
         return true;
     }
+
+
+    /**
+     * Revert to draft.
+     *
+     * @param int $userid
+     * @return boolean
+     */
+    public function revert_to_draft($userid) {
+        global $USER;
+
+        if ($this->get_instance()->teamsubmission) {
+            $submission = $this->get_group_submission($userid, 0, false);
+        } else {
+            $submission = $this->get_user_submission($userid, false);
+        }
+
+        if (!$submission) {
+            return false;
+        }
+        $submission->status = ASSIGN_SUBMISSION_STATUS_DRAFT;
+        $this->update_submission($submission, $userid, true, $this->get_instance()->teamsubmission);
+
+        // Update the modified time on the grade (grader modified).
+        $grade = $this->get_user_grade($userid, true);
+        $grade->grader = $USER->id;
+        $this->update_grade($grade);
+
+        $completion = new completion_info($this->get_course());
+        if ($completion->is_enabled($this->get_course_module()) &&
+                $this->get_instance()->completionsubmit) {
+            $completion->update_state($this->get_course_module(), COMPLETION_INCOMPLETE, $userid);
+        }
+        \mod_assign\event\submission_status_updated::create_from_submission($this, $submission)->trigger();
+        return true;
+    }
+
+
+    /**
+     * Notify both student and graders where the submission has notifications enabled
+     *
+     * @param string $userid The id of the student
+     * @param assign $assign The assign object of the particular assignment
+     * @return void
+     */
+    public function notify_users($userid, $assign) {
+        $submission = $this->get_user_submission($userid, false);
+        // If notifications have to be sent to the graders then send the notification.
+        if ($this->get_instance()->sendnotifications) {
+            notify_graders($submission);
+        }
+
+        // If notifying students.
+        if ($this->get_instance()->sendstudentnotifications) {
+            notify_student_submission_receipt($submission, $assign);
+        }
+        return;
+    }
 }

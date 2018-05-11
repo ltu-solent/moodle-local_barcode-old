@@ -38,16 +38,23 @@ require_once($CFG->dirroot . '/mod/assign/submission/physical/lib.php');
 class local_barcode_external extends external_api {
     /**
      * Save an assignment barcode submission
-     * @param  string $barcode The barcode to process`
+     * @param  string $barcode   The barcode to process`
+     * @param  string $revert    Revert to draft indicator
+     * @param  string $ontime Mark the submission as on time
      * @return array           The response with a status code and message
      */
-    public static function save_barcode_submission($barcode) {
-        global $DB;
-
+    public static function save_barcode_submission($barcode, $revert, $ontime) {
+        global $DB, $USER;
         // Clense parameters.
         $params = self::validate_parameters(
                     self::save_barcode_submission_parameters(),
-                    array('barcode' => $barcode));
+                    array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
+
+        // Remove extra params as they aren't used in $DB->get_record_sql, the barcode is.
+        $revert = $params['revert'];
+        $ontime = $parmas['ontime'];
+        unset($params['revert']);
+        unset($params['ontime']);
 
         $response = array(
             'data' => array(
@@ -60,15 +67,16 @@ class local_barcode_external extends external_api {
                 'duedate'               => '',
                 'submissiontime'        => '',
                 'assignmentdescription' => '',
-                'islate'                => 0
+                'islate'                => 0,
+                'reverted'              => 0
             ),
         );
 
-        // Get the user name setting from plugin configs table
+        // Get the user name setting from plugin configs table.
         $conditions = array('plugin' => 'assignsubmission_physical', 'name' => 'usernamesettings');
         $username   = $DB->get_record('config_plugins', $conditions, 'value', IGNORE_MISSING);
 
-        // If the username doesn't exist then return the error
+        // If the username doesn't exist then return the error.
         if (! $username) {
             $response['data']['code']    = 404;
             $response['data']['message'] = get_string('missinguseridentifier', 'local_barcode');
@@ -99,7 +107,8 @@ class local_barcode_external extends external_api {
                  WHERE b.barcode = ?";
 
         if ($record = $DB->get_record_sql($sql, $params, IGNORE_MISSING)) {
-            // Get the username details
+
+            // Get the username details.
             if (! $userdetails = get_username(array($record->userid, $username->value))) {
                 $response['data']['code']    = 404;
                 $response['data']['message'] = get_string('missingstudentid', 'local_barcode');
@@ -140,6 +149,33 @@ class local_barcode_external extends external_api {
 
                 $response['data']['code']    = 200;
                 $response['data']['message'] = get_string('submissionsaved', 'local_barcode');
+                return $response;
+            }
+
+            // If the submission has already been submitted, revert to draft.
+            if ($revert === '1' && $submission && $submission->status === 'submitted') {
+                $update               = new stdClass();
+                $update->id           = $submission->id;
+                $update->timemodified = $timestamp;
+                $update->status       = 'draft';
+                $DB->update_record('assign_submission', $update);
+
+                $response['data']['code']     = 200;
+                $response['data']['message']  = get_string('reverttodraftresponse', 'local_barcode');
+                $response['data']['reverted'] = 1;
+                return $response;
+            }
+
+            // Allow late submission.
+            if ($ontime === '1' && $submission && $submission->status !== 'submitted') {
+                $update               = new stdClass();
+                $update->id           = $submission->id;
+                $update->timemodified = $record->duedate;
+                $update->status       = 'submitted';
+                $DB->update_record('assign_submission', $update);
+
+                $response['data']['code']    = 200;
+                $response['data']['message'] = get_string('submissionontime', 'local_barcode');
                 return $response;
             }
 
@@ -194,7 +230,9 @@ class local_barcode_external extends external_api {
     public static function save_barcode_submission_parameters() {
         return new external_function_parameters(
             array(
-                'barcode' => new external_value(PARAM_TEXT, 'barcode')
+                'barcode'   => new external_value(PARAM_TEXT, 'barcode'),
+                'revert'    => new external_value(PARAM_TEXT, 'revert'),
+                'ontime' => new external_value(PARAM_TEXT, 'ontime')
             )
         );
     }
@@ -216,11 +254,12 @@ class local_barcode_external extends external_api {
                         'studentname' => new external_value(PARAM_NOTAGS, 'the name of the student'),
                         'idformat' => new external_value(PARAM_TEXT, 'the student identifier format'),
                         'studentid' => new external_value(PARAM_RAW, 'the student identifier'),
-                        'participantid' => new external_value(PARAM_INT, 'if blind marking is in use, this replaces the student id'),
+                        'participantid' => new external_value(PARAM_INT, 'if blind marking is in use then replace the student id'),
                         'duedate' => new external_value(PARAM_TEXT, 'the assignment due date'),
                         'submissiontime' => new external_value(PARAM_TEXT, 'the current time'),
                         'assignmentdescription' => new external_value(PARAM_RAW, 'assignment description'),
-                        'islate' => new external_value(PARAM_INT, 'whether or not the assignment has been submitted late')
+                        'islate' => new external_value(PARAM_INT, 'whether or not the assignment has been submitted late'),
+                        'reverted' => new external_value(PARAM_INT, 'whether ot not the submission has been reverted to draft')
                     )
                 )
             )

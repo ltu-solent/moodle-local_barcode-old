@@ -57,12 +57,18 @@ td:nth-child(3) {
   position: relative;
 }
 
-.bc-success {
-  position: relative;
+@media screen and (max-width: 460px) {
+  th:nth-child(1) {
+    display: none;
+  }
+  td:nth-child(1) {
+    display: none;
+  }
 }
 
 .bc-success:after,
-.bc-fail:after {
+.bc-fail:after,
+.bc-revert:after {
   position: absolute;
   top: 10px;
   right: 38px;
@@ -73,11 +79,15 @@ td:nth-child(3) {
 }
 
 .bc-success:after {
-  background: url([[pix:local_barcode|check-24-shadow]]) no-repeat;
+  background: url([[pix:local_barcode|bc-success]]) no-repeat;
 }
 
 .bc-fail:after {
   background: url([[pix:local_barcode|bc-fail]]) no-repeat;
+}
+
+.bc-revert:after {
+  background: url([[pix:local_barcode|bc-revert]]) no-repeat;
 }
 
 .bc-islate {
@@ -86,4 +96,8 @@ td:nth-child(3) {
 
 .bc-ontime {
   color: #5cb85c;
+}
+
+.bc-form {
+  margin: 1rem auto;
 }
