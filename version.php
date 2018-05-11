@@ -25,9 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018040400;
+$plugin->version   = 2018051100;
 $plugin->requires  = 2015111600; // Moodle 3.0.
 $plugin->cron      = 0;
 $plugin->component = 'local_barcode';
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->maturity  = MATURITY_BETA;
 $plugin->release   = '1.0.0';
