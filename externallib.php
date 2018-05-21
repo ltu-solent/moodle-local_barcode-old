@@ -26,8 +26,6 @@
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
 require_once($CFG->libdir . "/externallib.php");
-require_once('./locallib.php');
-require_once($CFG->dirroot . '/mod/assign/submission/physical/lib.php');
 
 /**
  * External web service for scanning barcodes
