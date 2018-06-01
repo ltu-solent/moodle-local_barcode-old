@@ -84,10 +84,13 @@ if ($mform->is_cancelled()) {
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
                             'context'       => $context,
-                            'cmid'          => $record->cmid,
                             'courseid'      => $assigncourse->id,
                             'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid
+                            'relateduserid' => $record->userid,
+                            'other'         => array(
+                                'pathnamehashes' => array(),
+                                'format'         => 'physical submission',
+                            )
                         );
                         $event = local_barcode\event\assessable_uploaded::create($params);
                         $event->trigger();
@@ -172,7 +175,7 @@ if ($mform->is_cancelled()) {
     }
 }
 
-$mform = new barcode_submission_form("./submission.php",
+$mform = new barcode_submission_form("./submissions.php",
             array('cmid' => $id, 'error' => $error, 'barcode' => $barcode, 'success' => $success),
             'post',
             '',

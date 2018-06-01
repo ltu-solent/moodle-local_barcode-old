@@ -162,6 +162,13 @@ function notify_graders(stdClass $submission, assign $assign) {
     }
 }
 
+
+/**
+ * Save a late submission and mark the submission as "on time"
+ * @param  object $barcoderecord The assignsubmision_physical barcode record
+ * @param  assign $assign        The assign object containing the assignment details
+ * @return object                The response object
+ */
 function save_late_submission($barcoderecord, assign $assign) {
     global $DB, $USER;
 

@@ -153,21 +153,26 @@ define(['jquery', 'core/str'], function($, str) {
                 barcode: barcode
             },
             success: function(response) {
-                code           = response.data.code;
-                message        = response.data.message;
-                assignment     = response.data.assignment;
-                assignmentdescription = response.data.assignmentdescription;
-                course         = response.data.course;
-                duedate        = response.data.duedate;
-                idformat       = response.data.idformat;
-                studentid      = response.data.studentid;
-                studentname    = response.data.studentname;
-                submissiontime = response.data.submissiontime;
-                islate         = response.data.islate;
-                hasReverted    = response.data.reverted;
+                if (typeof response.faultCode !== 'undefined') {
+                    code = response.faultString;
+                    message = response.faultString;
+                } else {
+                    code           = response.data.code;
+                    message        = response.data.message;
+                    assignment     = response.data.assignment;
+                    assignmentdescription = response.data.assignmentdescription;
+                    course         = response.data.course;
+                    duedate        = response.data.duedate;
+                    idformat       = response.data.idformat;
+                    studentid      = response.data.studentid;
+                    studentname    = response.data.studentname;
+                    submissiontime = response.data.submissiontime;
+                    islate         = response.data.islate;
+                    hasReverted    = response.data.reverted;
+                    resetRevert();
+                    resetOnTime();
+                }
                 feedback();
-                resetRevert();
-                resetOnTime();
             },
             error: function(response) {
                 code           = response.data.code;

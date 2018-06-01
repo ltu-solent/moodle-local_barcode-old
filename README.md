@@ -10,9 +10,11 @@ In the event that a student has queued to submit their assignment on time but th
 
 ### Installation
 
-The plugin requires an authorisation token to authenticate the web service request. While each user could set their own token for the web service, a quicker solution is for an admin to allocate a single user to the service and for the one token to enable the service.
+The plugin requires an authorisation token to authenticate the web service request. While Moodle allows each user to set their own token for a web service, administration permitting, an alternative is to assign an authorisation token to a single user for the service and have the one user and their token used for authentication.
 
-To set an authorisation token for the plugin, got to Site Administration -> Plugins -> Web services -> External services. There's a list of services, we're looking for Barcode Scanning and click the Authorised users link. Use this section to add a user to the web service.
+If creating a new user for the sole purpose of authenticating the Barcode Scanning web service, create the new user before proceeding.
+
+To set an authorisation token for the plugin, go to Site Administration -> Plugins -> Web services -> External services. There's a list of services, we're looking for Barcode Scanning and click the Authorised users link. Use this section to add a user to the web service.
 
 Now navigate to Plugins -> Web services -> Manage Tokens and click add. Search for the user that was just added and select the Barcode Scanning service, leaving the Valid until option deselected. Now save the changes and the web service is ready to be used.
 

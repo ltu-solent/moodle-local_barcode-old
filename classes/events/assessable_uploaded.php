@@ -86,6 +86,10 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
         $this->data['objecttable'] = 'assign_submission';
     }
 
+    /**
+     * Map the database table and type of restore
+     * @return array The database table and restore type as an array
+     */
     public static function get_objectid_mapping() {
         return array('db' => 'assign_submission', 'restore' => 'submission');
     }
