@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author    Dez Glidden <dez.glidden@catalyst-eu.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assessable_uploaded extends \core\event\assessable_uploaded {
+class submission_submitted extends \mod_assign\event\submission_updated {
 
     /**
      * Returns description of what happened.
@@ -45,16 +45,6 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
     public function get_description() {
         return "The user with id '$this->userid' has scanned a physical submission with the id '$this->objectid' " .
             "in the assignment activity with course module id '$this->cmid'.";
-    }
-
-
-    /**
-     * Return the legacy event name.
-     *
-     * @return string
-     */
-    public static function get_legacy_eventname() {
-        return 'assessable_content_uploaded';
     }
 
 
@@ -73,7 +63,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/local/barcode/submission.php', array());
+        return new \moodle_url('/local/barcode/assign/submissions.php', array());
     }
 
     /**
@@ -83,7 +73,7 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      */
     protected function init() {
         parent::init();
-        $this->data['objecttable'] = 'assign_submission';
+        $this->data['objecttable'] = 'assignsubmission_barcode';
     }
 
     /**
@@ -91,6 +81,6 @@ class assessable_uploaded extends \core\event\assessable_uploaded {
      * @return array The database table and restore type as an array
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'assign_submission', 'restore' => 'submission');
+        return array('db' => 'assignsubmission_barcode', 'restore' => \core\event\base::NOT_MAPPED);
     }
 }
