@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author    Dez Glidden <dez.glidden@catalyst-eu.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class submission_submitted extends \mod_assign\event\submission_updated {
+class submission_updated extends \mod_assign\event\submission_updated {
 
     /**
      * Returns description of what happened.

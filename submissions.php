@@ -28,7 +28,7 @@ require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once('barcode_submission_form.php');
 require_once('locallib.php');
 require_once('./classes/barcode_assign.php');
-require_once('./classes/event/submission_submitted.php');
+require_once('./classes/event/submission_updated.php');
 
 $id                = optional_param('id', 0, PARAM_INT);
 list($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
@@ -76,7 +76,7 @@ if ($mform->is_cancelled()) {
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
                     }
 
@@ -99,7 +99,7 @@ if ($mform->is_cancelled()) {
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
                     }
 
@@ -130,7 +130,7 @@ if ($mform->is_cancelled()) {
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
                     }
 
