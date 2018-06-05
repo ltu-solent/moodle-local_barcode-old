@@ -29,7 +29,7 @@ require_once('../barcode_submission_form.php');
 require_once('../locallib.php');
 require_once('../classes/barcode_assign.php');
 require_once('../classes/upload_submission.php');
-require_once('../classes/events/assessable_uploaded.php');
+require_once('../classes/event/assessable_uploaded.php');
 
 $context = context_system::instance();
 $id      = $context->id;
