@@ -22,20 +22,28 @@
  * @author     Dez Glidden <dez.glidden@catalyst-eu.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-require_once('../../config.php');
+require_once('../../../config.php');
 require_once($CFG->libdir  . '/pagelib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once('barcode_submission_form.php');
-require_once('locallib.php');
-require_once('./classes/barcode_assign.php');
-require_once('./classes/event/submission_updated.php');
+require_once('../barcode_submission_form.php');
+require_once('../locallib.php');
+require_once('../classes/barcode_assign.php');
+require_once('../classes/upload_submission.php');
+require_once('../classes/event/submission_updated.php');
 
-$id                = optional_param('id', 0, PARAM_INT);
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
-$context           = context_module::instance($cm->id);
-$assign = new barcode_assign($context, $cm, $course);
-require_login($course, true, $cm);
+$context = context_system::instance();
+$id      = $context->id;
+
+require_login();
 require_capability('assignsubmission/barcode:scan', $context);
+
+$PAGE->set_context($context);
+$PAGE->set_pagelayout('standard');
+$PAGE->set_heading($SITE->fullname);
+$PAGE->set_title($SITE->fullname . ': ' . get_string('pageheading', 'local_barcode'));
+$PAGE->set_url(new moodle_url('/local/barcode/assign/submission.php'));
+$PAGE->navbar->add(get_string('navigationbreadcrumb', 'local_barcode'), new moodle_url('/local/barcode/assign/submission.php'));
+$PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, true));
 
  // Process the submitted form. Process the barcode and return the user to the grading
  // summary page or set the error to display.
@@ -46,18 +54,23 @@ $barcode = '';
 $isopen  = true;
 
 if ($mform->is_cancelled()) {
-    $url = new moodle_url('/mod/assign/submission/physical/grading.php', ['id' => $id]);
+    $url = new moodle_url('/my/', []);
     redirect($url);
 } else if ($formdata = $mform->get_submitted_data()) {
     global $DB;
 
     if (! empty($formdata->barcode)) {
-        $assign = new barcode_assign($context, $cm, $course);
-        // Process the barcode & submission.
         $conditions = array('barcode' => $formdata->barcode);
         $record = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+        // Process the barcode & submission.
 
         if ($record) {
+            // Set the assignment context for declaring a new barcode_assign instance.
+            $cmid                          = $record->cmid;
+            list($assigncourse, $assigncm) = get_course_and_cm_from_cmid($cmid, 'assign');
+            $assigncontext                 = context_module::instance($assigncm->id);
+
+            $assign = new barcode_assign($assigncontext, $assigncm, $assigncourse);
             $isopen = $assign->student_submission_is_open($record->userid, false, false, false);
             $submissionrecord = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING);
 
@@ -71,8 +84,8 @@ if ($mform->is_cancelled()) {
                         $success = $response['data']['message'];
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
+                            'context'       => $assigncontext,
+                            'courseid'      => $assigncourse->id,
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid,
                             'other'         => array(
@@ -89,6 +102,19 @@ if ($mform->is_cancelled()) {
                     $assign->revert_to_draft($record->userid);
                     $success = get_string('reverttodraftresponse', 'local_barcode');
                     $assign->notify_users($record->userid, $assign);
+                    $params = array(
+                        'context'       => $assigncontext,
+                        'courseid'      => $assigncourse->id,
+                        'objectid'      => $record->submissionid,
+                        'relateduserid' => $record->userid,
+                        'other'         => array(
+                            'submissionid'      => $submissionrecord->id,
+                            'submissionattempt' => $submissionrecord->attemptnumber,
+                            'submissionstatus'  => $submissionrecord->status,
+                        ),
+                    );
+                    $event = local_barcode\event\submission_updated::create($params);
+                    $event->trigger();
                 } else if ($formdata->reverttodraft === '0' && $formdata->submitontime === '1') {
                     $response = save_late_submission($record, $assign);
 
@@ -98,8 +124,8 @@ if ($mform->is_cancelled()) {
                         $success = $response['data']['message'];
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
+                            'context'       => $assigncontext,
+                            'courseid'      => $assigncourse->id,
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid,
                             'other'         => array(
@@ -133,8 +159,8 @@ if ($mform->is_cancelled()) {
                         $success = $response['data']['message'];
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
+                            'context'       => $assigncontext,
+                            'courseid'      => $assigncourse->id,
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid,
                             'other'         => array(
@@ -161,17 +187,11 @@ if ($mform->is_cancelled()) {
     } else {
         $error = get_string('barcodeempty', 'local_barcode');
     }
-
+    $formdata->barcode = '';
 }
 
-$PAGE->set_url('/local/barcode/submissions.php', array('id' => $id));
-$PAGE->set_context($context);
-$PAGE->set_title(get_string('pageheading', 'local_barcode'));
-
-$PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, false));
-
-$mform = new barcode_submission_form("./submissions.php?id=$id&action=scanning",
-            array('cmid' => $id, 'error' => $error, 'barcode' => $barcode, 'success' => $success),
+$mform = new barcode_submission_form("./submissions.php",
+            array('cmid' => $id, 'error' => $error, 'barcode' => '', 'success' => $success),
             'post',
             '',
             'id="id_barcode_form"');
