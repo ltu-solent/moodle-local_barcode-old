@@ -25,6 +25,7 @@
 
 $string['addbuttonlabel']          = 'Add';
 $string['allowsubmitontime']       = 'Allow late submission';
+$string['allowmultiplescans']      = 'Allow multiple scans?';
 $string['alreadysubmitted']        = 'This submission has already been submitted';
 $string['assignmentdetails']       = 'Assignment Details';
 $string['barcode']                 = 'Barcode';

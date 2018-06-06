@@ -29,7 +29,7 @@ require_once('../barcode_submission_form.php');
 require_once('../locallib.php');
 require_once('../classes/barcode_assign.php');
 require_once('../classes/upload_submission.php');
-require_once('../classes/event/submission_submitted.php');
+require_once('../classes/events/assessable_uploaded.php');
 
 $context = context_system::instance();
 $id      = $context->id;
@@ -92,7 +92,7 @@ if ($mform->is_cancelled()) {
                                 'format'         => 'physical submission',
                             )
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\assessable_uploaded::create($params);
                         $event->trigger();
                     }
 
@@ -107,7 +107,7 @@ if ($mform->is_cancelled()) {
                         'objectid'      => $record->submissionid,
                         'relateduserid' => $record->userid
                     );
-                    $event = local_barcode\event\submission_submitted::create($params);
+                    $event = local_barcode\event\assessable_uploaded::create($params);
                     $event->trigger();
                 } else if ($formdata->reverttodraft === '0' && $formdata->submitontime === '1') {
                     $response = save_late_submission($record, $assign);
@@ -124,7 +124,7 @@ if ($mform->is_cancelled()) {
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\assessable_uploaded::create($params);
                         $event->trigger();
                     }
 
@@ -155,7 +155,7 @@ if ($mform->is_cancelled()) {
                             'objectid'      => $record->submissionid,
                             'relateduserid' => $record->userid
                         );
-                        $event = local_barcode\event\submission_submitted::create($params);
+                        $event = local_barcode\event\assessable_uploaded::create($params);
                         $event->trigger();
                     }
 
