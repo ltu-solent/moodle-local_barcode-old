@@ -44,6 +44,7 @@ $error   = '';
 $success = '';
 $barcode = '';
 $isopen  = true;
+$multiplescans = '0';
 
 if ($mform->is_cancelled()) {
     $url = new moodle_url('/mod/assign/submission/physical/grading.php', ['id' => $id]);
@@ -60,6 +61,8 @@ if ($mform->is_cancelled()) {
         if ($record) {
             $isopen = $assign->student_submission_is_open($record->userid, false, false, false);
 
+            $submissionrecord = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING);
+
             if ($isopen) {
                 if ($formdata->reverttodraft === '0' && $formdata->submitontime === '0') {
                     $response = save_submission($record, $assign);
@@ -71,10 +74,14 @@ if ($mform->is_cancelled()) {
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
                             'context'       => $context,
-                            'cmid'          => $record->cmid,
                             'courseid'      => $course->id,
                             'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid
+                            'relateduserid' => $record->userid,
+                            'other'         => array(
+                                'submissionid'      => $submissionrecord->id,
+                                'submissionattempt' => $submissionrecord->attemptnumber,
+                                'submissionstatus'  => $submissionrecord->status,
+                            ),
                         );
                         $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
@@ -94,10 +101,14 @@ if ($mform->is_cancelled()) {
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
                             'context'       => $context,
-                            'cmid'          => $record->cmid,
                             'courseid'      => $course->id,
                             'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid
+                            'relateduserid' => $record->userid,
+                            'other'         => array(
+                                'submissionid'      => $submissionrecord->id,
+                                'submissionattempt' => $submissionrecord->attemptnumber,
+                                'submissionstatus'  => $submissionrecord->status,
+                            ),
                         );
                         $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
@@ -125,10 +136,14 @@ if ($mform->is_cancelled()) {
                         $assign->notify_users($record->userid, $assign);
                         $params = array(
                             'context'       => $context,
-                            'cmid'          => $record->cmid,
                             'courseid'      => $course->id,
                             'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid
+                            'relateduserid' => $record->userid,
+                            'other'         => array(
+                                'submissionid'      => $submissionrecord->id,
+                                'submissionattempt' => $submissionrecord->attemptnumber,
+                                'submissionstatus'  => $submissionrecord->status,
+                            ),
                         );
                         $event = local_barcode\event\submission_updated::create($params);
                         $event->trigger();
@@ -150,7 +165,7 @@ if ($mform->is_cancelled()) {
     }
 
 }
-
+// var_dump($formdata);die;
 $PAGE->set_url('/local/barcode/submissions.php', array('id' => $id));
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('pageheading', 'local_barcode'));
@@ -158,7 +173,13 @@ $PAGE->set_title(get_string('pageheading', 'local_barcode'));
 $PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, false));
 
 $mform = new barcode_submission_form("./submissions.php?id=$id&action=scanning",
-            array('cmid' => $id, 'error' => $error, 'barcode' => $barcode, 'success' => $success),
+            array(
+                'cmid'          => $id,
+                'error'         => $error,
+                'barcode'       => $barcode,
+                'success'       => $success,
+                'multiplescans' => $multiplescans,
+            ),
             'post',
             '',
             'id="id_barcode_form"');

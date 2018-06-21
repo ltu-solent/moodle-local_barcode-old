@@ -44,7 +44,7 @@ class submission_updated extends \mod_assign\event\submission_updated {
      */
     public function get_description() {
         return "The user with id '$this->userid' has scanned a physical submission with the id '$this->objectid' " .
-            "in the assignment activity with course module id '$this->cmid'.";
+            "in the assignment activity with course id '$this->courseid'.";
     }
 
 

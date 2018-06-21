@@ -177,6 +177,7 @@ define(['jquery', 'core/str'], function($, str) {
                 feedback();
             },
             error: function(response) {
+
             },
             dataType: "json"
         });
@@ -332,7 +333,8 @@ define(['jquery', 'core/str'], function($, str) {
     }
 
     function setOnTime() {
-        if (document.getElementById('id_submitontime').checked === true) {
+        if (document.getElementById('id_submitontime') &&
+                document.getElementById('id_submitontime').checked === true) {
             ontime = '1';
         } else {
             ontime = '0';
@@ -348,7 +350,8 @@ define(['jquery', 'core/str'], function($, str) {
     }
 
     /**
-     * @return {[type]}
+     * Enable multiple scans at the same time
+     * @return boolean
      */
     function getAllowMultipleScans() {
         return document.getElementById('id_multiplescans').checked;
