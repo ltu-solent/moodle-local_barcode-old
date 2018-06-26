@@ -46,6 +46,16 @@ $string['pageheading']             = 'Upload physical submisisons';
 $string['pluginname']              = 'Barcode Scanning';
 $string['requiredbarcode']         = 'At least 1 barcode is required.';
 $string['reverttodraft']           = 'Revert this submission back to draft.';
+$string['reverttodraftemail']      = 'Your physical assignment has been reverted to draft, perhaps because it ' .
+                                     'has been handed back to you for further work. You will now need to re-submit ' .
+                                     'the assignment before the deadline. If you have any questions about this please ' .
+                                     'speak with your tutor. The link to the assignment in question can be found below: <br />' .
+                                     '<a href="{$a->linkurl}">{$a->linktext}</a>';
+$string['reverttodraftemailnonhtml'] = 'Your physical assignment, {$a->linktext} has been reverted to draft, perhaps because it ' .
+                                     'has been handed back to you for further work. You will now need to re-submit ' .
+                                     'the assignment before the deadline. If you have any questions about this please ' .
+                                     'speak with your tutor. The assignment can be viewed at {$a->linkurl}';
+$string['reverttodraftemailsubject'] = 'Submission reverted to draft';
 $string['reverttodraftresponse']   = 'This submission has been reverted back to draft';
 $string['scanned']                 = 'Scanned';
 $string['student']                 = 'Student';

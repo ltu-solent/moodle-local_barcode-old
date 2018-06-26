@@ -90,6 +90,17 @@ if ($mform->is_cancelled()) {
                 } else if ($formdata->reverttodraft === '1' && $formdata->submitontime === '0') {
                     $assign->revert_to_draft($record->userid);
                     $success = get_string('reverttodraftresponse', 'local_barcode');
+
+                    $emaildata = new stdClass();
+                    $emaildata->user = $DB->get_record(
+                        'user',
+                        array('id' => $record->userid),
+                        $fields='*',
+                        IGNORE_MISSING);
+                    $emaildata->linkurl  = "$CFG->wwwroot/mod/assign/view.php?id=$id";
+                    $emaildata->linktext = $assign->get_instance()->name;
+                    $assign->send_revert_to_draft_email($emaildata);
+
                     $assign->notify_users($record->userid, $assign);
                 } else if ($formdata->reverttodraft === '0' && $formdata->submitontime === '1') {
                     $response = save_late_submission($record, $assign);
