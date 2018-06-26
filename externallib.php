@@ -28,6 +28,7 @@ defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 require_once($CFG->libdir . "/externallib.php");
 require_once('locallib.php');
 require_once($CFG->dirroot . '/mod/assign/submission/physical/lib.php');
+require_once($CFG->dirroot . '/lib/moodlelib.php');
 
 /**
  * External web service for scanning barcodes
@@ -97,6 +98,7 @@ class local_barcode_external extends external_api {
                        b.barcode,
                        b.courseid,
                        b.submissionid,
+                       b.cmid,
                        a.name AS assignment,
                        a.intro AS assignmentdescription,
                        a.duedate,
@@ -167,6 +169,24 @@ class local_barcode_external extends external_api {
                 $update->timemodified = $timestamp;
                 $update->status       = 'draft';
                 $DB->update_record('assign_submission', $update);
+                // Email user
+                $email = new stdClass();
+                $email->userto          = $data->user;
+                $email->userfrom        = '';
+                $email->replyto         = get_config('noreplyaddress');
+                $email->replytoname     = 'No Reply';
+                $email->userfrom        = '';
+                $email->linkurl         = "$CFG->wwwroot/mod/assign/view.php?id=$record->cmid";
+                $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');
+                $email->fullmessage     = get_string('reverttodraftemailnonhtml',
+                                            'local_barcode',
+                                            ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]);
+                $email->fullmessagehtml = '<p>' .
+                                          get_string('reverttodraftemail',
+                                            'local_barcode',
+                                            ['linkurl' => $email->linkurl, 'linktext' => $record->assignment]) .
+                                          '</p>';
+                email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
 
                 $response['data']['code']     = 200;
                 $response['data']['message']  = get_string('reverttodraftresponse', 'local_barcode');

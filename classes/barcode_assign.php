@@ -26,6 +26,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
+require_once($CFG->dirroot . '/lib/moodlelib.php');
 
 /**
  * Extend the assign class, allowing access to the assign class while extending it's functionality
@@ -164,5 +165,24 @@ class barcode_assign extends assign {
             notify_student_submission_receipt($submission, $assign);
         }
         return;
+    }
+
+
+    public function send_revert_to_draft_email($data) {
+        $email = new stdClass();
+        $email->userto          = $data->user;
+        $email->replyto         = get_config('noreplyaddress');
+        $email->replytoname     = 'No Reply';
+        $email->userfrom        = '';
+        $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');
+        $email->fullmessage     = get_string('reverttodraftemailnonhtml',
+                                    'local_barcode',
+                                    ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]);
+        $email->fullmessagehtml = '<p>' .
+                                  get_string('reverttodraftemail',
+                                    'local_barcode',
+                                    ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]) .
+                                  '</p>';
+        email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
     }
 }
