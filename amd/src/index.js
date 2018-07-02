@@ -169,25 +169,16 @@ define(['jquery', 'core/str'], function($, str) {
                     submissiontime = response.data.submissiontime;
                     islate         = response.data.islate;
                     hasReverted    = response.data.reverted;
-                    resetRevert();
-                    resetOnTime();
+
+                    if (! getAllowMultipleScans()) {
+                        resetRevert();
+                        resetOnTime();
+                    }
                 }
                 feedback();
             },
             error: function(response) {
-                code           = response.data.code;
-                message        = response.data.message;
-                assignment     = response.data.assignment;
-                assignmentdescription = response.data.assignmentdescription;
-                course         = response.data.course;
-                duedate        = response.data.duedate;
-                idformat       = response.data.idformat;
-                studentid      = response.data.studentid;
-                studentname    = response.data.studentname;
-                submissiontime = response.data.submissiontime;
-                islate         = response.data.islate;
-                hasReverted    = response.data.reverted;
-                feedback();
+
             },
             dataType: "json"
         });
@@ -216,7 +207,6 @@ define(['jquery', 'core/str'], function($, str) {
                 $('#feedback-group').addClass('bc-has-success');
                 addTableRow('success');
             }
-            resetBarcode();
         }
 
         if (code === 404) {
@@ -230,6 +220,7 @@ define(['jquery', 'core/str'], function($, str) {
             $('#feedback-group').addClass('bc-has-danger');
             addTableRow('fail');
         }
+        resetBarcode();
         outputBarcodeCount();
     }
 
@@ -343,7 +334,8 @@ define(['jquery', 'core/str'], function($, str) {
     }
 
     function setOnTime() {
-        if (document.getElementById('id_submitontime').checked === true) {
+        if (document.getElementById('id_submitontime') &&
+                document.getElementById('id_submitontime').checked === true) {
             ontime = '1';
         } else {
             ontime = '0';
@@ -356,6 +348,14 @@ define(['jquery', 'core/str'], function($, str) {
      */
     function resetOnTime() {
         document.getElementById('id_submitontime').checked = false;
+    }
+
+    /**
+     * Enable multiple scans at the same time
+     * @return boolean
+     */
+    function getAllowMultipleScans() {
+        return document.getElementById('id_multiplescans').checked;
     }
 
     // Closure to calculate the total number of scanned barcodes

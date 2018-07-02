@@ -35,7 +35,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author    Dez Glidden <dez.glidden@catalyst-eu.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class submission_submitted extends \mod_assign\event\submission_updated {
+class submission_updated extends \mod_assign\event\submission_updated {
 
     /**
      * Returns description of what happened.
@@ -44,7 +44,7 @@ class submission_submitted extends \mod_assign\event\submission_updated {
      */
     public function get_description() {
         return "The user with id '$this->userid' has scanned a physical submission with the id '$this->objectid' " .
-            "in the assignment activity with course module id '$this->cmid'.";
+            "in the assignment activity with course id '$this->courseid'.";
     }
 
 

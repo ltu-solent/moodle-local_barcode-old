@@ -58,7 +58,7 @@ class local_barcode_external extends external_api {
 
         // Remove extra params as they aren't used in $DB->get_record_sql, the barcode is.
         $revert = $params['revert'];
-        $ontime = $parmas['ontime'];
+        $submitontime = $params['ontime'];
         unset($params['revert']);
         unset($params['ontime']);
 
@@ -195,8 +195,7 @@ class local_barcode_external extends external_api {
             }
 
             // Allow late submission.
-
-            if ('1' === $ontime && $submission && 'submitted' !== $submission->status) {
+            if ('1' === $submitontime && $submission && 'submitted' !== $submission->status) {
                 $update               = new stdClass();
                 $update->id           = $submission->id;
                 $update->timemodified = $record->duedate;
