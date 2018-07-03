@@ -249,6 +249,4 @@ function send_revert_to_draft_email($data) {
                                 ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]) .
                               '</p>';
     email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
-    // email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = '', $attachname = '',
-    //                    $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {($email);
 }

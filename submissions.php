@@ -95,7 +95,7 @@ if ($mform->is_cancelled()) {
                     $emaildata->user = $DB->get_record(
                         'user',
                         array('id' => $record->userid),
-                        $fields='*',
+                        $fields = '*',
                         IGNORE_MISSING);
                     $emaildata->linkurl  = "$CFG->wwwroot/mod/assign/view.php?id=$id";
                     $emaildata->linktext = $assign->get_instance()->name;
@@ -176,7 +176,7 @@ if ($mform->is_cancelled()) {
     }
 
 }
-// var_dump($formdata);die;
+
 $PAGE->set_url('/local/barcode/submissions.php', array('id' => $id));
 $PAGE->set_context($context);
 $PAGE->set_title(get_string('pageheading', 'local_barcode'));
