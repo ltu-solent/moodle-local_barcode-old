@@ -178,7 +178,7 @@ define(['jquery', 'core/str'], function($, str) {
                 feedback();
             },
             error: function(response) {
-
+                message = response.data.message;
             },
             dataType: "json"
         });
@@ -236,10 +236,10 @@ define(['jquery', 'core/str'], function($, str) {
 
         var thead = table.append('<thead></thead>');
         var header = thead.append('<tr></tr>');
-        header.html('<th colspan="8">' + strings[1] + ' - (<span id="id_count">' +
+        header.html('<th colspan="8" class="bc-th-left bc-sm-hide">' + strings[1] + ' - (<span id="id_count">' +
                 '0</span> ' + strings[6] + ')</th>' +
-                '<th colspan="17">' + strings[0] + '</th>' +
-                '<th colspan="5">' + strings[8] + '(<span id="submit_count">0</span>)</th>');
+                '<th colspan="17" class="bc-th-center">' + strings[0] + '</th>' +
+                '<th colspan="5" class="bc-th-right">' + strings[8] + '(<span id="submit_count">0</span>)</th>');
         table.append('<tbody id="tbody"></tbody>');
 
         main.append(table);
@@ -263,8 +263,12 @@ define(['jquery', 'core/str'], function($, str) {
             cell.attr('colspan', colspans[i]);
             span.html(arr[i]);
             cell.append(span);
-
+            // Hide the first cell on small screens.
+            if (i === 0) {
+                cell.addClass('bc-sm-hide');
+            }
             if (i === 2)  {
+                cssClass += ' bc-td-position';
                 span.addClass('visuallyhidden');
                 cell.addClass(cssClass);
             }
