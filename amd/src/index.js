@@ -28,6 +28,7 @@ define(['jquery', 'core/str'], function($, str) {
         $('#id_barcode').focus();
         document.getElementById('id_barcode').addEventListener('keypress', preventOnEnterSubmission, false);
         document.getElementById('id_submitbutton').addEventListener('click', preventSubmission, false);
+        addCombinedCountElement();
 
         var langStrings = str.get_strings([
             {key: 'assignmentdetails', component: 'local_barcode'},
@@ -191,9 +192,9 @@ define(['jquery', 'core/str'], function($, str) {
     function feedback() {
         var feedback = $('#feedback');
         feedback.html(message);
+        var error = 0;
 
         if (code === 200) {
-            outputSubmittedCount();
             if (hasReverted) {
                 submitted = strings[2];
                 $('#feedback-group').addClass('bc-has-success');
@@ -219,9 +220,10 @@ define(['jquery', 'core/str'], function($, str) {
             $('#feedback-group').removeClass('bc-has-inform');
             $('#feedback-group').addClass('bc-has-danger');
             addTableRow('fail');
+            error = 1;
         }
         resetBarcode();
-        outputBarcodeCount();
+        updateCounts(error);
     }
 
     /**
@@ -303,8 +305,9 @@ define(['jquery', 'core/str'], function($, str) {
      * Display the total number of scanned barcodes in the barcode table
      * @return {void}
      */
-    function outputBarcodeCount() {
-        $('#id_count').html(totalScanned());
+    function outputBarcodeCount(count) {
+        $('#id_count').html(count);
+        $('#scanned_count').html(count);
         return false;
     }
 
@@ -312,8 +315,9 @@ define(['jquery', 'core/str'], function($, str) {
      * Display the number of successfully submitted barcodes
      * @return {void}
      */
-    function outputSubmittedCount() {
-        $('#submit_count').html(submittedBarcodes());
+    function outputSubmittedCount(count) {
+        $('#submit_count').html(count);
+        $('#submitted_count').html(count);
         return false;
     }
 
@@ -360,6 +364,47 @@ define(['jquery', 'core/str'], function($, str) {
      */
     function getAllowMultipleScans() {
         return document.getElementById('id_multiplescans').checked;
+    }
+
+    /**
+     * Add the scanned and submitted counts next to the barcode input element
+     */
+    function addCombinedCountElement() {
+        $('#id_barcode').after(function() {
+            return '<span class="bc-combined-counts bc-inform-inline">(' +
+                       '<span id="scanned_count">0</span> / ' +
+                       '<span id="submitted_count">0</span>)' +
+                    '</span>';
+        });
+    }
+
+    /**
+     * Update the submitted and scaned counts
+     * @param  {int} error Whether or not there was an error, 1 if there was
+     * @return {void}
+     */
+    function updateCounts(error) {
+        var submitted,
+            scanned = totalScanned();
+        if (error === 1 && !$('#submitted_count').hasClass('bc-error-inline')) {
+            applyErrorClass();
+        }
+        if (error === 0) {
+            submitted = submittedBarcodes();
+            outputSubmittedCount(submitted);
+        }
+        if (!$('#scanned_count').hasClass('bc-success-inline')) {
+            $('#scanned_count').addClass('bc-success-inline');
+        }
+        outputBarcodeCount(scanned);
+    }
+
+    /**
+     * Apply the error class to the #submitted_count element if a barcode is not submitted
+     * @return {void}
+     */
+    function applyErrorClass() {
+        $('#submitted_count').addClass('bc-error-inline');
     }
 
     // Closure to calculate the total number of scanned barcodes
