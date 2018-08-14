@@ -100,3 +100,21 @@
 .bc-form {
   margin: 1rem auto;
 }
+
+.bc-combined-counts {
+  display: inline-block;
+  margin-left: 1em;
+  vertical-align: top;
+}
+
+.bc-success-inline {
+  color: #5cb85c;
+}
+
+.bc-error-inline {
+  color: #d9534f;
+}
+
+.bc-inform-inline {
+  color: #888;
+}
