@@ -183,12 +183,6 @@ $PAGE->set_title(get_string('pageheading', 'local_barcode'));
 
 $PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, false));
 
-$PAGE->set_url('/local/barcode/submissions.php', array('id' => $id));
-$PAGE->set_context($context);
-$PAGE->set_title(get_string('pageheading', 'local_barcode'));
-
-$PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, false));
-
 $mform = new barcode_submission_form("./submissions.php?id=$id&action=scanning",
             array(
                 'cmid'          => $id,
