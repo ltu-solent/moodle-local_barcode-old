@@ -118,3 +118,18 @@
 .bc-inform-inline {
   color: #888;
 }
+
+@media screen and (max-width: 768px) {
+  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
+  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
+  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle {
+    max-width: 265px;
+  }
+
+  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
+  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
+  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox {
+    width: 20%;
+    margin-top: 4px;
+  }
+}
