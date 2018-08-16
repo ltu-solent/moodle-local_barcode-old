@@ -1,3 +1,4 @@
+```
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
@@ -56,7 +57,9 @@ $string['reverttodraftemailnonhtml'] = 'Your physical assignment, {$a->linktext}
                                      'the assignment before the deadline. If you have any questions about this please ' .
                                      'speak with your tutor. The assignment can be viewed at {$a->linkurl}';
 $string['reverttodraftemailsubject'] = 'Submission reverted to draft';
+$string['reverttodraftfromuser']   = '(System) Submission reverted to draft';
 $string['reverttodraftresponse']   = 'This submission has been reverted back to draft';
+$string['reverttodraftreplyname']  = 'No Reply';
 $string['scanned']                 = 'Scanned';
 $string['student']                 = 'Student';
 $string['submissionclosed']        = 'The assignment is closed for this submissions';
