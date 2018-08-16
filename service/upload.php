@@ -30,15 +30,19 @@
  */
 
 require_once('../../../config.php');
-require_once('../../../lib/moodlelib.php');
-require_once('../../../lib/filelib.php');
-require_once('../locallib.php');
-require_once('../classes/upload_submission.php');
+require_once($CFG->dirroot . '/lib/moodlelib.php');
+require_once($CFG->dirroot . '/lib/filelib.php');
+require_once($CFG->dirroot . '/local/barcode/locallib.php');
+require_once($CFG->dirroot . '/local/barcode/classes/submission/upload_submission.php');
 
-$id = optional_param('id', 0, PARAM_INT);
+$data = new stdClass();
+$data->id      = optional_param('id', 0, PARAM_INT);
+$data->barcode = required_param('barcode', PARAM_ALPHANUM);
+$data->revert  = required_param('revert', PARAM_TEXT);
+$data->ontime  = required_param('ontime', PARAM_TEXT);
 
-if ($id !== 0 && $id !== 1) {
-    list($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
+if ($data->id !== 0 && $data->id !== 1) {
+    list($course, $cm) = get_course_and_cm_from_cmid($data->id, 'assign');
     $context           = context_module::instance($cm->id);
     require_login($course, true, $cm);
 } else {
@@ -49,5 +53,5 @@ if ($id !== 0 && $id !== 1) {
 require_capability('assignsubmission/barcode:scan', $context);
 
 // Save the new submission to the database.
-$upload = new upload_submission();
+$upload = new local_barcode\submission\upload_submission($data);
 $upload->save_submission();

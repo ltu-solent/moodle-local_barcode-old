@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Local barcode webservice plugin
+ * This file contains the privacy class for the local plugin local_barcode
  *
  * @package   local_barcode
  * @copyright 2018 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
@@ -23,12 +23,18 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_barcode\privacy;
+
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2018091700;
-$plugin->requires  = 2017111300; // Moodle 3.4.
-$plugin->cron      = 0;
-$plugin->component = 'local_barcode';
-$plugin->maturity  = MATURITY_BETA;
-$plugin->release   = '1.0.0';
-$plugin->dependencies = array('assignsubmission_physical' => ANY_VERSION);
+class provider implements \core_privacy\local\metadata\null_provider {
+    /**
+     * Get the language string identifier with the component's language
+     * file to explain why this plugin stores no data.
+     *
+     * @return  string
+     */
+    public static function get_reason() {
+        return 'privacy:metadata';
+    }
+}

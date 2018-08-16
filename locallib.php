@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains functions for the local barcode plugin that the non-JavaScript users will use.
+ * This file contains functions for the local barcode plugin.
  *
  * @package   local_barcode
  * @copyright 2018 onwards Catalyst IT {@link http://www.catalyst-eu.net/}
@@ -24,66 +24,72 @@
  */
 
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
-require_once($CFG->dirroot . '/lib/moodlelib.php');
+
 
 /**
- * Save barcode submission
+ * Construct the data for use in the submission event.
  *
- * @param  object $barcoderecord The barcode data related to the submission
- * @param  assign $assign        An assign instance related to the submission
- * @return array                 The response as an array
+ * @param  object $data The context, course, barcode record and submission details
+ * @return array        An array that holds the required data for a submission event
  */
-function save_submission($barcoderecord, assign $assign) {
-    global $DB, $USER;
+function local_barcode_get_submission_event_data($data) {
+    global $USER;
 
-    $response = array();
-
-    $submission = $DB->get_record('assign_submission', array('id' => $barcoderecord->submissionid), '*', IGNORE_MISSING);
-
-    if ($submission && $submission->status !== 'submitted') {
-        $update = new stdclass();
-        $update->id           = $submission->id;
-        $update->timemodified = time();
-        $update->status       = 'submitted';
-        $DB->update_record('assign_submission', $update, false);
-
-        $response['data']['code']    = 200;
-        $response['data']['message'] = get_string('submissionsaved', 'local_barcode');
-        return $response;
-    }
-
-    if ($submission && $submission->status === 'submitted') {
-        $response['data']['code']    = 422;
-        $response['data']['message'] = get_string('alreadysubmitted', 'local_barcode');
-        return $response;
-    }
-
-    if (! $submission) {
-        $response['data']['code']    = 404;
-        $response['data']['message'] = get_string('submissionnotfound', 'local_barcode');
-        return $response;
-    }
-
-    // A lovely little catch all for the blue moon occasion.
-    $response['data']['code']    = 418;
-    $response['data']['message'] = get_string('catchall', 'local_barcode');
-    return $response;
+    return array(
+        'context'       => $data->context,
+        'courseid'      => $data->course->id,
+        'objectid'      => $data->barcoderecord->submissionid,
+        'relateduserid' => $data->barcoderecord->userid,
+        'userid'        => $USER->id,
+        'other'         => array(
+            'submissionid'      => $data->submissionrecord->id,
+            'submissionattempt' => $data->submissionrecord->attemptnumber,
+            'submissionstatus'  => $data->submissionrecord->status
+        )
+    );
 }
 
 
 /**
- * Is the submission being scanned on the same day
- * @param  int $timemodified    Timestamp of the database record to check
- * @return boolean              Returns true if the time modified is the same day as today
+ * Is the response success or an error.
+ *
+ * @param  array  $response The response from a saved submission
+ * @return boolean          True if a 200 status code
  */
-function same_day_submission($timemodified) {
-    $now          = new DateTime();
-    $lastmodified = new DateTime('@' . $timemodified);
+function local_barcode_is_response_success($response) {
+    return ($response['data']['code'] === 200) ? true : false;
+}
 
-    // Difference in days as a string.
-    $diff = $now->diff($lastmodified)->format("%a");
 
-    if ($diff === '0') {
+/**
+ * Get the email data to use in sending submission email confirmations
+ *
+ * @param  object $data The user, assign and barcode data
+ * @return object       The email data
+ */
+function local_barcode_get_email_data($data) {
+    global $CFG;
+
+    $emaildata = new stdClass();
+    $emaildata->user     = $data->user;
+    $emaildata->linkurl  = $CFG->wwwroot . '/mod/assign/view.php?id=' . $data->id;
+    $emaildata->linktext = $data->assign->get_instance()->name;
+    $emaildata->groupid  = $data->barcoderecord->groupid;
+    return $emaildata;
+}
+
+
+/**
+ * Check if the barcode submitted is valid
+ *
+ * @param  objecy  $data The data object containing the barcode database record and the submitted form barcode input field
+ * @return boolean       True if it's a valid barcode, false if not
+ */
+function local_barcode_is_valid_form($data) {
+    if (!empty($data->barcoderecord)) {
+        return true;
+    }
+    if (!empty($data->formdata->barcode)) {
         return true;
     }
     return false;
@@ -91,95 +97,104 @@ function same_day_submission($timemodified) {
 
 
 /**
- * Get the web service token for authorised users
- * By default there is only one user setup to generate a token, this is the
- * admin user. This function looks for ony the first token, which is returned
- * @return string   Web Service Token
+ * Get the error message to display if the submitted form barcode is not valid.
+ *
+ * @param  object $data The data object containing the barcode database record and the submitted form barcode input field
+ * @return string       The error message to display to the user
  */
-function get_wstoken() {
+function local_barcode_get_form_error_message($data) {
+    if (empty($data->formdata->barcode)) {
+        return get_string('barcodeempty', 'local_barcode');
+    }
+    if (empty($data->barcoderecord)) {
+        return get_string('barcodenotfound', 'local_barcode');
+    }
+}
+
+
+/**
+ * Is the submission open and valid to allow a submission
+ *
+ * @param  object $data The data object containing the form options, submission record from the database and the isopen boolean
+ * @return boolean      True if a valid submission
+ */
+function local_barcode_is_valid_submission($data) {
+    if (!$data->isopen && $data->formdata->reverttodraft === '0' && $data->formdata->submitontime === '1') {
+        return true;
+    }
+    if ($data->isopen && $data->submissionrecord) {
+        return true;
+    }
+    return false;
+}
+
+
+/**
+ * Get the error message to display if the submission is not valid and the chosen form options conflict
+ *
+ * @param  object $data The submitted form and the submission record
+ * @return [type]       [description]
+ */
+function local_barcode_get_invalid_submission_error($data) {
+    if ($data->formdata->reverttodraft === '1' && $data->formdata->submitontime === '1') {
+        return get_string('draftandsubmissionerror', 'local_barcode');
+    }
+    if (!$data->isopen) {
+        return get_string('submissionclosed', 'local_barcode');
+    }
+    return get_string('submissionnotfound', 'local_barcode');;
+}
+
+
+/**
+ * Is the submission for a group.
+ *
+ * @param  object  $data The data containing the group submission id to check
+ * @return boolean       True if it's a group submission
+ */
+function local_barcode_is_group_submission($data) {
+    return ($data->barcoderecord->groupid !== '0') ? true : false;
+}
+
+
+/**
+ * Is the submission to be submitted on time.
+ *
+ * @param  object $data The formdata
+ * @return boolean      True if the submit on time has been selected
+ */
+function local_barcode_is_submit_ontime($data) {
+    return ($data->formdata->submitontime === '1') ? true : false;
+}
+
+
+/**
+ * Get the username format that's used. eg. Student ID
+ *
+ * @return object The username object
+ */
+function local_barcode_get_username_format() {
     global $DB;
-    $sql = 'SELECT et.token
-              FROM {external_tokens} et
-              JOIN {external_services} es ON es.id = et.externalserviceid
-             WHERE es.name = ? ';
-
-    return $DB->get_field_sql($sql, array('Barcode Scanning'), IGNORE_MULTIPLE);
+    $conditions = array('plugin' => 'assignsubmission_physical', 'name' => 'usernamesettings');
+    return $DB->get_record('config_plugins', $conditions, 'value', IGNORE_MISSING);
 }
 
 
 /**
- * Notify student upon successful submission.
+ * Get the assignment & submission details
  *
- * @param stdClass $submission  The submission object
- * @param assign   $assign      An assign instance
- * @return void
+ * @param  array $barcode The barcode field
+ * @return object The database object containing the assignent & submission details
  */
-function notify_student_submission_receipt(stdClass $submission, assign $assign) {
-    global $DB, $USER;
-
-    $adminconfig = $assign->get_admin_config();
-
-    if (empty($adminconfig->submissionreceipts)) {
-        // No need to do anything.
-        return;
-    }
-
-    $student = $DB->get_record('user', array('id' => $submission->userid), '*', IGNORE_MISSING);
-    $assign->send_notification($USER,
-                             $student,
-                             'submissionreceiptother',
-                             'assign_notification',
-                             $submission->timemodified);
-}
-
-
-/**
- * Send notifications to graders upon submissions.
- *
- * @param stdClass $submission  The submission
- * @param assign $assign        An assign instance
- * @return void
- */
-function notify_graders(stdClass $submission, assign $assign) {
-    global $USER;
-
-    $instance = $assign->get_instance();
-    $late     = $instance->duedate && ($instance->duedate < time());
-
-    if (!$instance->sendnotifications && !($late && $instance->sendlatenotifications)) {
-        // No need to do anything.
-        return;
-    }
-
-    if ($notifyusers = $assign->get_notifiable_users($user->id)) {
-        foreach ($notifyusers as $notifyuser) {
-            $assign->send_notification($USER,
-                                     $notifyuser,
-                                     'gradersubmissionupdated',
-                                     'assign_notification',
-                                     $submission->timemodified);
-        }
-    }
-}
-
-
-/**
- * Save a late submission and mark the submission as "on time"
- * @param  object $barcoderecord The assignsubmision_physical barcode record
- * @param  assign $assign        The assign object containing the assignment details
- * @return object                The response object
- */
-function save_late_submission($barcoderecord, assign $assign) {
-    global $DB, $USER;
-
-    $response = array();
-
+function local_barcode_get_assignment_submmission($barcode) {
+    global $DB;
     $sql = "SELECT b.assignmentid,
                    b.groupid,
                    b.userid,
                    b.barcode,
                    b.courseid,
                    b.submissionid,
+                   b.cmid,
                    a.name AS assignment,
                    a.intro AS assignmentdescription,
                    a.duedate,
@@ -187,46 +202,13 @@ function save_late_submission($barcoderecord, assign $assign) {
                    c.fullname AS course,
                    u.firstname,
                    u.lastname,
-                   m.id AS participantid,
-                   s.status
+                   m.id AS participantid
               FROM {assignsubmission_barcode} b
               JOIN {assign} a ON b.assignmentid = a.id
               JOIN {course} c ON b.courseid = c.id
               JOIN {user} u ON b.userid = u.id
-              JOIN {assign_submission} s ON b.submissionid = s.id
          LEFT JOIN {assign_user_mapping} m ON b.userid = m.userid AND b.assignmentid = m.assignment
              WHERE b.barcode = ?";
 
-    if ($submission = $DB->get_record_sql($sql, array('barcode' => $barcoderecord->barcode), IGNORE_MISSING)) {
-
-        if ($submission->status !== 'submitted') {
-            $update = new stdclass();
-            $update->id           = $submission->submissionid;
-            $update->timemodified = $submission->duedate;
-            $update->status       = 'submitted';
-            $DB->update_record('assign_submission', $update, false);
-
-            $response['data']['code']    = 200;
-            $response['data']['message'] = get_string('submissionontime', 'local_barcode');
-            return $response;
-        }
-
-        if ($submission->status === 'submitted') {
-            $response['data']['code']    = 422;
-            $response['data']['message'] = get_string('alreadysubmitted', 'local_barcode');
-            return $response;
-        }
-
-    }
-
-    if (! $submission) {
-        $response['data']['code']    = 404;
-        $response['data']['message'] = get_string('submissionnotfound', 'local_barcode');
-        return $response;
-    }
-
-    // A lovely little catch all for the blue moon occasion.
-    $response['data']['code']    = 418;
-    $response['data']['message'] = get_string('catchall', 'local_barcode');
-    return $response;
+    return $DB->get_record_sql($sql, $barcode, IGNORE_MISSING);
 }

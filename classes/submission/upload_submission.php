@@ -23,6 +23,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+namespace local_barcode\submission;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -65,65 +67,33 @@ class upload_submission {
      */
     private $ontime;
 
+
     /**
      * Set the domain name, token and the barcode values
      */
-    public function __construct() {
-        $this->domainname = $this->get_domainname();
-        $this->token      = $this->get_token();
-        $this->barcode    = $this->get_barcode();
-        $this->revert     = $this->get_revert();
-        $this->ontime     = $this->get_ontime();
-    }
-
-
-    /**
-     * Get the barcode url parameter
-     * @return string
-     */
-    public function get_barcode() {
-        return required_param('barcode', PARAM_ALPHANUM);
-    }
-
-
-    /**
-     * Get the auth token for the local plugin
-     *
-     * During installation the admin will authorise an admin user which will
-     * produce a token for the plugin. This function gets the token which is
-     * passed as a url query parameter
-     * @return string   string token for authorisation
-     */
-    public function get_token() {
-        return get_wstoken();
-    }
-
-
-    /**
-     * Get the root domain eg. http://www.example.com
-     *
-     * @return string
-     */
-    public function get_domainname() {
+    public function __construct($data) {
         global $CFG;
-        return $CFG->wwwroot;
+
+        $this->domainname = $CFG->wwwroot;
+        $this->token      = $this->get_wstoken();
+        $this->barcode    = $data->barcode;
+        $this->revert     = $data->revert;
+        $this->ontime     = $data->ontime;
     }
 
 
     /**
-     * Get the revert url parameter value
-     * @return string Returns '1' for a revert to draft or '0' for a submission
+     * Get the web service authentication token
      */
-    protected function get_revert() {
-        return required_param('revert', PARAM_TEXT);
-    }
+    private function get_wstoken() {
+        global $DB;
 
+        $sql = 'SELECT et.token
+                  FROM {external_tokens} et
+                  JOIN {external_services} es ON es.id = et.externalserviceid
+                 WHERE es.name = ?';
 
-    /**
-     * Get the ontime url parameter
-     */
-    protected function  get_ontime() {
-        return required_param('ontime', PARAM_TEXT);
+        return $DB->get_field_sql($sql, array('Barcode Scanning'), IGNORE_MULTIPLE);
     }
 
 
@@ -135,7 +105,7 @@ class upload_submission {
     public function save_submission() {
         header('Content-Type: text/plain');
         $serverurl = $this->domainname . '/webservice/xmlrpc/server.php'. '?wstoken=' . $this->token;
-        $curl = new curl;
+        $curl = new \curl;
         $post = xmlrpc_encode_request($this->functionname, array($this->barcode, $this->revert, $this->ontime));
         $resp = xmlrpc_decode($curl->post($serverurl, $post));
 
