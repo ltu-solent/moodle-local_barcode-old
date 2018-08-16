@@ -25,7 +25,7 @@
 
 $string['addbuttonlabel']          = 'Add';
 $string['allowsubmitontime']       = 'Allow late submission';
-$string['allowmultiplescans']      = 'Allow multiple scans?';
+$string['allowmultiplescans']      = 'Allow multiple scans';
 $string['alreadysubmitted']        = 'This submission has already been submitted';
 $string['assignmentdetails']       = 'Assignment Details';
 $string['barcode']                 = 'Barcode';
@@ -45,7 +45,7 @@ $string['notsubmitted']            = 'Not Submitted';
 $string['pageheading']             = 'Upload physical submisisons';
 $string['pluginname']              = 'Barcode Scanning';
 $string['requiredbarcode']         = 'At least 1 barcode is required.';
-$string['reverttodraft']           = 'Revert this submission back to draft.';
+$string['reverttodraft']           = 'Revert this submission back to draft';
 $string['reverttodraftemail']      = 'Your physical assignment has been reverted to draft, perhaps because it ' .
                                      'has been handed back to you for further work. You will now need to re-submit ' .
                                      'the assignment before the deadline. If you have any questions about this please ' .
