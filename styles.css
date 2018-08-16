@@ -132,4 +132,10 @@
     width: 20%;
     margin-top: 4px;
   }
+
+  input#id_reverttodraft,
+  input#id_submitontime,
+  input#id_multiplescans {
+    margin-top: 2px
+  }
 }
