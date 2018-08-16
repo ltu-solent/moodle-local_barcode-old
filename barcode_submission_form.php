@@ -73,17 +73,28 @@ class barcode_submission_form extends moodleform {
         $mform->setType('cmid', PARAM_INT);
         $mform->addElement('html', '<div class="bc-form">');
         $mform->addGroup($formgroup,  'barcodegroup', get_string('barcode', 'local_barcode'), ' ',  false);
-        $mform->addElement('advcheckbox', 'reverttodraft', get_string('reverttodraft', 'local_barcode'), '', '', array(0, 1));
+        $mform->addElement('advcheckbox',
+                           'reverttodraft',
+                           get_string('reverttodraft', 'local_barcode'),
+                           '',
+                           array('class' => 'bc-form-item'),
+                           array(0, 1));
+
         if ($ontimeavailable) {
             $mform->addElement('advcheckbox',
                                'submitontime',
                                get_string('allowsubmitontime', 'local_barcode'),
                                '',
-                               '',
+                               array('class' => 'bc-form-item'),
                                array(0, 1));
         }
 
-        $mform->addElement('advcheckbox', 'multiplescans', get_string('allowmultiplescans', 'local_barcode'), '', '', array(0, 1));
+        $mform->addElement('advcheckbox',
+                           'multiplescans',
+                           get_string('allowmultiplescans', 'local_barcode'),
+                           '',
+                           array('class' => 'bc-form-item'),
+                           array(0, 1));
         $mform->setType('multiplescans', PARAM_ALPHANUM);
         $mform->setDefault('multiplescans', $this->_customdata['multiplescans']);
         $mform->addElement('html', '</div>');

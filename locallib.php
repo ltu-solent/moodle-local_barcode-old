@@ -230,25 +230,3 @@ function save_late_submission($barcoderecord, assign $assign) {
     $response['data']['message'] = get_string('catchall', 'local_barcode');
     return $response;
 }
-
-
-
-function send_revert_to_draft_email($data) {
-    $email = new stdClass();
-    $email->userto          = $data->user;
-    $email->replyto         = get_config('noreplyaddress');
-    $email->replytoname     = 'No Reply';
-    $email->userfrom        = '';
-    $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');
-    $email->fullmessage     = get_string('reverttodraftemailnonhtml',
-                                  'local_barcode',
-                                  ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]);
-    $email->fullmessagehtml = '<p>' .
-                              get_string('reverttodraftemail',
-                                'local_barcode',
-                                ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]) .
-                              '</p>';
-    email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
-    // email_to_user($user, $from, $subject, $messagetext, $messagehtml = '', $attachment = '', $attachname = '',
-    //                    $usetrueaddress = true, $replyto = '', $replytoname = '', $wordwrapwidth = 79) {($email);
-}

@@ -41,27 +41,26 @@
   text-align: center;
 }
 
-th:nth-child(1) {
+.bc-th-left {
   text-align: left;
   padding-left: 1rem;
 }
-th:nth-child(2) {
+
+.bc-th-center {
   text-align: center;
 }
-th:nth-child(3) {
+
+.bc-th-right {
   text-align: right;
   padding-right: 1rem;
 }
 
-td:nth-child(3) {
+.bc-td-position {
   position: relative;
 }
 
 @media screen and (max-width: 460px) {
-  th:nth-child(1) {
-    display: none;
-  }
-  td:nth-child(1) {
+  .bc-sm-hide {
     display: none;
   }
 }
@@ -100,4 +99,37 @@ td:nth-child(3) {
 
 .bc-form {
   margin: 1rem auto;
+}
+
+.bc-combined-counts {
+  display: inline-block;
+  margin-left: 1em;
+  vertical-align: top;
+}
+
+.bc-success-inline {
+  color: #5cb85c;
+}
+
+.bc-error-inline {
+  color: #d9534f;
+}
+
+.bc-inform-inline {
+  color: #888;
+}
+
+@media screen and (max-width: 768px) {
+  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
+  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
+  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle {
+    max-width: 265px;
+  }
+
+  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
+  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
+  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox {
+    width: 20%;
+    margin-top: 4px;
+  }
 }

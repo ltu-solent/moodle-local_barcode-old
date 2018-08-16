@@ -169,7 +169,7 @@ class local_barcode_external extends external_api {
                 $update->timemodified = $timestamp;
                 $update->status       = 'draft';
                 $DB->update_record('assign_submission', $update);
-                // Email user
+                // Email user.
                 $email = new stdClass();
                 $email->userto          = $data->user;
                 $email->userfrom        = '';
@@ -186,7 +186,8 @@ class local_barcode_external extends external_api {
                                             'local_barcode',
                                             ['linkurl' => $email->linkurl, 'linktext' => $record->assignment]) .
                                           '</p>';
-                email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
+                email_to_user($email->userto, $email->userfrom, $email->subject,
+                              $email->fullmessage, $email->fullmessagehtml, '', '');
 
                 $response['data']['code']     = 200;
                 $response['data']['message']  = get_string('reverttodraftresponse', 'local_barcode');
@@ -277,18 +278,22 @@ class local_barcode_external extends external_api {
                 'data' => new external_single_structure(
                     array(
                         'code'                  => new external_value(PARAM_INT, 'http status code'),
-                        'message'               => new external_value(PARAM_TEXT, 'status message confirming either success or failure'),
+                        'message'               => new external_value(PARAM_TEXT,
+                                                                     'status message confirming either success or failure'),
                         'assignment'            => new external_value(PARAM_TEXT, 'the assignment name'),
                         'course'                => new external_value(PARAM_TEXT, 'the course name'),
                         'studentname'           => new external_value(PARAM_NOTAGS, 'the name of the student'),
                         'idformat'              => new external_value(PARAM_TEXT, 'the student identifier format'),
                         'studentid'             => new external_value(PARAM_RAW, 'the student identifier'),
-                        'participantid'         => new external_value(PARAM_INT, 'if blind marking is in use then replace the student id'),
+                        'participantid'         => new external_value(PARAM_INT,
+                                                                     'if blind marking is in use then replace the student id'),
                         'duedate'               => new external_value(PARAM_TEXT, 'the assignment due date'),
                         'submissiontime'        => new external_value(PARAM_TEXT, 'the current time'),
                         'assignmentdescription' => new external_value(PARAM_RAW, 'assignment description'),
-                        'islate'                => new external_value(PARAM_INT, 'whether or not the assignment has been submitted late'),
-                        'reverted'              => new external_value(PARAM_INT, 'whether ot not the submission has been reverted to draft'),
+                        'islate'                => new external_value(PARAM_INT,
+                                                                     'whether or not the assignment has been submitted late'),
+                        'reverted'              => new external_value(PARAM_INT,
+                                                                     'whether ot not the submission has been reverted to draft'),
                     )
                 ),
             )
