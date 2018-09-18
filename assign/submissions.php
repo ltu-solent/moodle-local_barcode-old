@@ -27,8 +27,8 @@ require_once($CFG->dirroot . '/lib/pagelib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once('../barcode_submission_form.php');
 require_once('../classes/barcode_assign.php');
-require_once('../classes/upload_submission.php');
 require_once('../classes/event/submission_updated.php');
+require_once('../classes/task/email_group.php');
 require_once('../locallib.php');
 
 $context = context_system::instance();
@@ -62,32 +62,36 @@ if ($mform->is_cancelled()) {
     // Process the barcode & submission.
     $conditions = array('barcode' => $data->formdata->barcode);
     $data->barcoderecord = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+    list($data->course, $data->cm) = get_course_and_cm_from_instance($data->barcoderecord->assignmentid, 'assign');
+    $data->context          = context_module::instance($data->barcoderecord->cmid);
+    $data->id               = $data->barcoderecord->cmid;
+    $data->assign           = new barcode_assign($data->context, $data->cm, $data->course);
+    $data->user             = $DB->get_record('user', array('id' => $data->barcoderecord->userid), $fields = '*', IGNORE_MISSING);
+    $data->isopen           = $data->assign->student_submission_is_open($data->user->id, false, false, false);
+    $data->groupid          = $data->barcoderecord->groupid;
+    $data->submissionrecord = $DB->get_record('assign_submission',
+                                              array('id' => $data->barcoderecord->submissionid),
+                                              '*',
+                                              IGNORE_MISSING);
 
     if (!local_barcode_is_valid_form($data) || !local_barcode_is_valid_submission($data)) {
         $error = (!local_barcode_is_valid_form($data)) ? local_barcode_get_form_error_message($data) :
                                                          local_barcode_get_invalid_submission_error($data);
         $barcode = $data->formdata->barcode;
     } else {
-        $data->user             = $DB->get_record('user', array('id' => $data->barcoderecord->userid), $fields = '*', IGNORE_MISSING);
-        $data->isopen           = $data->assign->student_submission_is_open($data->user->id, false, false, false);
-        $data->groupid          = $data->barcoderecord->groupid;
-        $data->submissionrecord = $DB->get_record('assign_submission',
-                                                  array('id' => $data->barcoderecord->submissionid),
-                                                  '*',
-                                                  IGNORE_MISSING);
 
         if ($data->formdata->reverttodraft === '1') {
-            if ($data->assign->submission_revert_to_draft($data->barcoderecord->userid)) {
+            if ($data->assign->submission_revert_to_draft($data)) {
                 $success = get_string('reverttodraftresponse', 'local_barcode');
                 // Email user.
-                $emaildata = local_barcode_get_email_data($data);
+                $data->emaildata = local_barcode_get_email_data($data);
                 // If group assignment then create a task to send each member a reverted to draft email.
                 if (local_barcode_is_group_submission($data)) {
                     $emailgroupmembers = new local_barcode\task\email_group_revert_to_draft();
-                    $emailgroupmembers->set_custom_data($emaildata);
+                    $emailgroupmembers->set_custom_data($data->emaildata);
                      \core\task\manager::queue_adhoc_task($emailgroupmembers);
                 } else {
-                    $data->assign->send_revert_to_draft_email($emaildata);
+                    $data->assign->send_revert_to_draft_email($data);
                 }
             } else {
                 $error = get_string('notsubmitted', 'local_barcode');
