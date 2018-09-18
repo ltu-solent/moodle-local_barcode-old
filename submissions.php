@@ -26,166 +26,104 @@ require_once('../../config.php');
 require_once($CFG->libdir  . '/pagelib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
 require_once('barcode_submission_form.php');
-require_once('locallib.php');
 require_once('./classes/barcode_assign.php');
 require_once('./classes/event/submission_updated.php');
+require_once('./classes/task/email_group.php');
+require_once('locallib.php');
 
-$id                = optional_param('id', 0, PARAM_INT);
-list($course, $cm) = get_course_and_cm_from_cmid($id, 'assign');
-$context           = context_module::instance($cm->id);
-$assign = new barcode_assign($context, $cm, $course);
-require_login($course, true, $cm);
-require_capability('assignsubmission/barcode:scan', $context);
+$data = new stdClass();
+$data->id = optional_param('id', 0, PARAM_INT);
+list($data->course, $data->cm) = get_course_and_cm_from_cmid($data->id, 'assign');
+$data->context = context_module::instance($data->cm->id);
+$data->assign = new barcode_assign($data->context, $data->cm, $data->course);
+require_login($data->course, true, $data->cm);
+require_capability('assignsubmission/barcode:scan', $data->context);
 
- // Process the submitted form. Process the barcode and return the user to the grading
- // summary page or set the error to display.
 $mform   = new barcode_submission_form();
 $error   = '';
 $success = '';
 $barcode = '';
-$isopen  = true;
 $multiplescans = '0';
 
 if ($mform->is_cancelled()) {
-    $url = new moodle_url('/mod/assign/submission/physical/grading.php', ['id' => $id]);
+    $url = new moodle_url('/mod/assign/submission/physical/grading.php', ['id' => $data->id]);
     redirect($url);
-} else if ($formdata = $mform->get_submitted_data()) {
-    global $DB;
+} elseif ($data->formdata = $mform->get_submitted_data()) {
+    // Process the barcode & submission.
+    $conditions = array('barcode' => $data->formdata->barcode);
+    $data->barcoderecord = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+    $data->user             = $DB->get_record('user', array('id' => $data->barcoderecord->userid), $fields = '*', IGNORE_MISSING);
+    $data->isopen           = $data->assign->student_submission_is_open($data->user->id, false, false, false);
+    $data->submissiontime   = ($data->formdata->submitontime === '1') ? $record->duedate : time();
+    $data->submissionrecord = $DB->get_record('assign_submission',
+                                              array('id' => $data->barcoderecord->submissionid),
+                                              '*',
+                                              IGNORE_MISSING);
 
-    if (! empty($formdata->barcode)) {
-        $assign = new barcode_assign($context, $cm, $course);
-        // Process the barcode & submission.
-        $conditions = array('barcode' => $formdata->barcode);
-        $record = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+    if (!local_barcode_is_valid_form($data) || !local_barcode_is_valid_submission($data)) {
+        $error = (!local_barcode_is_valid_form($data)) ? local_barcode_get_form_error_message($data) :
+                                                         local_barcode_get_invalid_submission_error($data);
+        $barcode = $data->formdata->barcode;
+    } else {
+        $data->groupid          = $data->barcoderecord->groupid;
 
-        if ($record) {
-            $isopen = $assign->student_submission_is_open($record->userid, false, false, false);
-
-            $submissionrecord = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING);
-
-            if ($isopen) {
-                if ($formdata->reverttodraft === '0' && $formdata->submitontime === '0') {
-                    $response = save_submission($record, $assign);
-
-                    if ($response['data']['code'] !== 200) {
-                        $error = $response['data']['message'];
-                    } else {
-                        $success = $response['data']['message'];
-                        $assign->notify_users($record->userid, $assign);
-                        $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
-                            'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid,
-                            'other'         => array(
-                                'submissionid'      => $submissionrecord->id,
-                                'submissionattempt' => $submissionrecord->attemptnumber,
-                                'submissionstatus'  => $submissionrecord->status,
-                            ),
-                        );
-                        $event = local_barcode\event\submission_updated::create($params);
-                        $event->trigger();
-                    }
-
-                } else if ($formdata->reverttodraft === '1' && $formdata->submitontime === '0') {
-                    $assign->revert_to_draft($record->userid);
-                    $success = get_string('reverttodraftresponse', 'local_barcode');
-
-                    $emaildata = new stdClass();
-                    $emaildata->user = $DB->get_record(
-                        'user',
-                        array('id' => $record->userid),
-                        $fields = '*',
-                        IGNORE_MISSING);
-                    $emaildata->linkurl  = "$CFG->wwwroot/mod/assign/view.php?id=$id";
-                    $emaildata->linktext = $assign->get_instance()->name;
-                    $assign->send_revert_to_draft_email($emaildata);
-
-                    $assign->notify_users($record->userid, $assign);
-                } else if ($formdata->reverttodraft === '0' && $formdata->submitontime === '1') {
-                    $response = save_late_submission($record, $assign);
-
-                    if ($response['data']['code'] !== 200) {
-                        $error = $response['data']['message'];
-                    } else {
-                        $success = $response['data']['message'];
-                        $assign->notify_users($record->userid, $assign);
-                        $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
-                            'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid,
-                            'other'         => array(
-                                'submissionid'      => $submissionrecord->id,
-                                'submissionattempt' => $submissionrecord->attemptnumber,
-                                'submissionstatus'  => $submissionrecord->status,
-                            ),
-                        );
-                        $event = local_barcode\event\submission_updated::create($params);
-                        $event->trigger();
-                    }
-
-                } else if ($formdata->reverttodraft === '1' && $formdata->submitontime === '1') {
-                    $error = get_string('draftandsubmissionerror', 'local_barcode');
+        if ($data->formdata->reverttodraft === '1') {
+            if ($data->assign->submission_revert_to_draft($data)) {
+                $success = get_string('reverttodraftresponse', 'local_barcode');
+                // Email user.
+                $data->emaildata = local_barcode_get_email_data($data);
+                // If group assignment then create a task to send each member a reverted to draft email.
+                if (local_barcode_is_group_submission($data)) {
+                    $emailgroupmembers = new local_barcode\task\email_group_revert_to_draft();
+                    $emailgroupmembers->set_custom_data($data->emaildata);
+                     \core\task\manager::queue_adhoc_task($emailgroupmembers);
+                } else {
+                    $data->assign->send_student_revert_to_draft_email($data);
                 }
+            } else {
+                $error = get_string('notsubmitted', 'local_barcode');
+                $barcode = $data->formdata->barcode;
             }
-
-            if (! $isopen) {
-                if ($formdata->reverttodraft === '0' && $formdata->submitontime === '0') {
-                    $error   = get_string('submissionclosed', 'local_barcode');
-                    $barcode = $formdata->barcode;
-                } else if ($formdata->reverttodraft === '1' && $formdata->submitontime === '0') {
-                    $error   = get_string('submissionclosed', 'local_barcode');
-                    $barcode = $formdata->barcode;
-                } else if ($formdata->reverttodraft === '0' && $formdata->submitontime === '1') {
-                    $response = save_late_submission($record, $assign);
-
-                    if ($response['data']['code'] !== 200) {
-                        $error = $response['data']['message'];
-                    } else {
-                        $success = $response['data']['message'];
-                        $assign->notify_users($record->userid, $assign);
-                        $params = array(
-                            'context'       => $context,
-                            'courseid'      => $course->id,
-                            'objectid'      => $record->submissionid,
-                            'relateduserid' => $record->userid,
-                            'other'         => array(
-                                'submissionid'      => $submissionrecord->id,
-                                'submissionattempt' => $submissionrecord->attemptnumber,
-                                'submissionstatus'  => $submissionrecord->status,
-                            ),
-                        );
-                        $event = local_barcode\event\submission_updated::create($params);
-                        $event->trigger();
-                    }
-
-                } else if ($formdata->reverttodraft === '1' && $formdata->submitontime === '1') {
-                    $error   = get_string('submissionclosed', 'local_barcode');
-                    $barcode = $formdata->barcode;
-                }
+        } elseif ($data->formdata->submitontime === '1') {
+            $data->submitontime = true;
+            $response = $data->assign->save_barcode_submission($data);
+            if (local_barcode_is_response_success($response)) {
+                $success = $response['data']['message'];
+            } else {
+                $error = $response['data']['message'];
+                $barcode = $data->formdata->barcode;
             }
-
         } else {
-            $error   = get_string('barcodenotfound', 'local_barcode');
-            $barcode = $formdata->barcode;
+            $data->submitontime = false;
+            $response = $data->assign->save_barcode_submission($data);
+
+            if (!local_barcode_is_response_success($response)) {
+                $error = $response['data']['message'];
+            } else {
+                $success = $response['data']['message'];
+                $eventdata = local_barcode_get_submission_event_data($data);
+                $event = local_barcode\event\submission_updated::create($eventdata);
+                $event->trigger();
+            }
         }
 
-    } else {
-        $error = get_string('barcodeempty', 'local_barcode');
+        if (!empty($success)) {
+            $eventdata = local_barcode_get_submission_event_data($data);
+            $event = local_barcode\event\submission_updated::create($eventdata);
+            $event->trigger();
+        }
     }
-
 }
 
-$PAGE->set_url('/local/barcode/submissions.php', array('id' => $id));
-$PAGE->set_context($context);
+$PAGE->set_url('/local/barcode/submissions.php', array('id' => $data->id));
+$PAGE->set_context($data->context);
 $PAGE->set_title(get_string('pageheading', 'local_barcode'));
 
-$PAGE->requires->js_call_amd('local_barcode/index', 'init', array($id, false));
+$PAGE->requires->js_call_amd('local_barcode/index', 'init', array($data->id, false));
 
-$mform = new barcode_submission_form("./submissions.php?id=$id&action=scanning",
+$mform = new barcode_submission_form("./submissions.php?id={$data->id}&action=scanning",
             array(
-                'cmid'          => $id,
+                'cmid'          => $data->id,
                 'error'         => $error,
                 'barcode'       => $barcode,
                 'success'       => $success,

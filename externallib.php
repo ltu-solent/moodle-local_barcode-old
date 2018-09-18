@@ -25,10 +25,12 @@
  */
 defined('MOODLE_INTERNAL') || die('Direct access to this script is forbidden.');
 
-require_once($CFG->libdir . "/externallib.php");
-require_once('locallib.php');
+require_once($CFG->dirroot . '/lib/externallib.php');
 require_once($CFG->dirroot . '/mod/assign/submission/physical/lib.php');
 require_once($CFG->dirroot . '/lib/moodlelib.php');
+require_once($CFG->dirroot . '/local/barcode/classes/barcode_assign.php');
+require_once($CFG->dirroot . '/local/barcode/classes/task/email_group.php');
+require_once($CFG->dirroot . '/local/barcode/locallib.php');
 
 /**
  * External web service for scanning barcodes
@@ -50,15 +52,16 @@ class local_barcode_external extends external_api {
         $revert,
         $ontime
     ) {
-        global $DB, $USER;
+        global $DB, $USER, $CFG;
         // Clense parameters.
         $params = self::validate_parameters(
             self::save_barcode_submission_parameters(),
             array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
 
+        $data = new stdClass();
         // Remove extra params as they aren't used in $DB->get_record_sql, the barcode is.
-        $revert = $params['revert'];
-        $submitontime = $params['ontime'];
+        $data->revert = $params['revert'];
+        $data->submitontime = $params['ontime'];
         unset($params['revert']);
         unset($params['ontime']);
 
@@ -78,13 +81,8 @@ class local_barcode_external extends external_api {
             ),
         );
 
-        // Get the user name setting from plugin configs table.
-        $conditions = array('plugin' => 'assignsubmission_physical', 'name' => 'usernamesettings');
-        $username   = $DB->get_record('config_plugins', $conditions, 'value', IGNORE_MISSING);
-
         // If the username doesn't exist then return the error.
-
-        if (!$username) {
+        if (!$username = local_barcode_get_username_format()) {
             $response['data']['code']    = 404;
             $response['data']['message'] = get_string('missinguseridentifier', 'local_barcode');
             return $response;
@@ -92,102 +90,61 @@ class local_barcode_external extends external_api {
 
         // If the barcode returns a record from the database then save the submission
         // and construct the response.
-        $sql = 'SELECT b.assignmentid,
-                       b.groupid,
-                       b.userid,
-                       b.barcode,
-                       b.courseid,
-                       b.submissionid,
-                       b.cmid,
-                       a.name AS assignment,
-                       a.intro AS assignmentdescription,
-                       a.duedate,
-                       a.blindmarking,
-                       c.fullname AS course,
-                       u.firstname,
-                       u.lastname,
-                       m.id AS participantid
-                  FROM {assignsubmission_barcode} b
-                  JOIN {assign} a ON b.assignmentid = a.id
-                  JOIN {course} c ON b.courseid = c.id
-                  JOIN {user} u ON b.userid = u.id
-             LEFT JOIN {assign_user_mapping} m ON b.userid = m.userid AND b.assignmentid = m.assignment
-                 WHERE b.barcode = ?';
+        if ($record = local_barcode_get_assignment_submmission($params)) {
+            $data->groupid = $record->groupid;
+            $data->id = $record->cmid;
+            list($data->course, $data->cm) = get_course_and_cm_from_instance($record->assignmentid, 'assign');
+            $data->context = context_module::instance($record->cmid);
+            $data->assign = new barcode_assign($data->context, $data->cm, $data->course);
+            $data->user = $DB->get_record('user', array('id' => $record->userid), '*', IGNORE_MISSING);
+            $data->isopen = $data->assign->student_submission_is_open($data->user->id, false, false, false);
+            $data->submissiontime = ($data->submitontime === '1') ? $record->duedate : time();
 
-        if ($record = $DB->get_record_sql($sql, $params, IGNORE_MISSING)) {
+            $response['data']['assignment']            = $record->assignment;
+            $response['data']['course']                = $record->course;
+            $response['data']['studentname']           = $record->firstname . ' ' . $record->lastname;
+            $response['data']['participantid']         = $record->participantid;
+            $response['data']['duedate']               = date('jS F, \'y G:i', $record->duedate);
+            $response['data']['submissiontime']        = date('jS F, \'y G:i:s', $data->submissiontime);
+            $response['data']['assignmentdescription'] = strip_tags($record->assignmentdescription);
+            $response['data']['islate']                = (($record->duedate - $timestamp) < 0) ? 1 : 0;
+
             // Get the username details.
 
-            if (!$userdetails = get_username(array($record->userid, $username->value))) {
+            if (!$userdetails = assignsubmission_physical_get_username(array($record->userid, $username->value))) {
                 $response['data']['code']    = 404;
                 $response['data']['message'] = get_string('missingstudentid', 'local_barcode');
                 return $response;
             }
 
-            // If the group id is not 0 then it's a group submission and the userid
-            // Doesn't matter for a submission.
+            $response['data']['idformat'] = $userdetails->name;
+            $response['data']['studentid'] = $userdetails->data;
 
-            if ('0' !== $record->groupid) {
-                $record->userid = '0';
-            }
-
-            $submission = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING);
-
-            $now       = new DateTime();
-            $timestamp = $now->getTimestamp();
-
-            $response['data']['assignment']            = $record->assignment;
-            $response['data']['course']                = $record->course;
-            $response['data']['studentname']           = $record->firstname . ' ' . $record->lastname;
-            $response['data']['idformat']              = $userdetails->name;
-            $response['data']['studentid']             = $userdetails->data;
-            $response['data']['participantid']         = $record->participantid;
-            $response['data']['duedate']               = date('jS F, \'y G:i', $record->duedate);
-            $response['data']['submissiontime']        = date('jS F, \'y g:i:s a', $timestamp);
-            $response['data']['assignmentdescription'] = strip_tags($record->assignmentdescription);
-            $response['data']['islate']                = (($record->duedate - $timestamp) < 0) ? 1 : 0;
-
-            if (!$submission) {
-                settype($submissionquery, 'object');
-                $submissionquery->assignment   = $record->assignmentid;
-                $submissionquery->userid       = $record->userid;
-                $submissionquery->status       = 'submitted';
-                $submissionquery->timecreated  = $timestamp;
-                $submissionquery->timemodified = $timestamp;
-                $submissionquery->latest       = 1;
-                $DB->insert_record('assign_submission', $submissionquery);
-
-                $response['data']['code']    = 200;
-                $response['data']['message'] = get_string('submissionsaved', 'local_barcode');
+            if (!$submission = $DB->get_record('assign_submission', array('id' => $record->submissionid), '*', IGNORE_MISSING)) {
+                $response['data']['code']    = 404;
+                $response['data']['message'] = get_string('submissionnotfound', 'local_barcode');
                 return $response;
             }
 
-            // If the submission has already been submitted, revert to draft.
+            // If the submission has already been reverted, feedback to user.
+            if ('1' === $data->revert && $submission && 'draft' === $submission->status) {
+                $response['data']['code']    = 422;
+                $response['data']['message'] = get_string('alreadydraftstatus', 'local_barcode');
+                return $response;
+            }
 
-            if ('1' === $revert && $submission && 'submitted' === $submission->status) {
-                $update               = new stdClass();
-                $update->id           = $submission->id;
-                $update->timemodified = $timestamp;
-                $update->status       = 'draft';
-                $DB->update_record('assign_submission', $update);
+            if ('1' === $data->revert && $submission && 'submitted' === $submission->status) {
+                $data->assign->submission_revert_to_draft($data);
                 // Email user.
-                $email = new stdClass();
-                $email->userto          = $data->user;
-                $email->userfrom        = '';
-                $email->replyto         = get_config('noreplyaddress');
-                $email->replytoname     = 'No Reply';
-                $email->userfrom        = '';
-                $email->linkurl         = "$CFG->wwwroot/mod/assign/view.php?id=$record->cmid";
-                $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');
-                $email->fullmessage     = get_string('reverttodraftemailnonhtml',
-                                            'local_barcode',
-                                            ['linkurl' => $data->linkurl, 'linktext' => $data->linktext]);
-                $email->fullmessagehtml = '<p>' .
-                                          get_string('reverttodraftemail',
-                                            'local_barcode',
-                                            ['linkurl' => $email->linkurl, 'linktext' => $record->assignment]) .
-                                          '</p>';
-                email_to_user($email->userto, $email->userfrom, $email->subject,
-                              $email->fullmessage, $email->fullmessagehtml, '', '');
+                $data->emaildata = local_barcode_get_email_data($data);
+                // If group assignment then create a task to send each member a reverted to draft email.
+                if ($record->groupid !== '0') {
+                    $emailgroupmembers = new local_barcode\task\email_group_revert_to_draft();
+                    $emailgroupmembers->set_custom_data($data);
+                     \core\task\manager::queue_adhoc_task($emailgroupmembers);
+                } else {
+                    $data->assign->send_student_revert_to_draft_email($data);
+                }
 
                 $response['data']['code']     = 200;
                 $response['data']['message']  = get_string('reverttodraftresponse', 'local_barcode');
@@ -195,56 +152,21 @@ class local_barcode_external extends external_api {
                 return $response;
             }
 
-            // Allow late submission.
-            if ('1' === $submitontime && $submission && 'submitted' !== $submission->status) {
-                $update               = new stdClass();
-                $update->id           = $submission->id;
-                $update->timemodified = $record->duedate;
-                $update->status       = 'submitted';
-                $DB->update_record('assign_submission', $update);
-
-                $response['data']['code']    = 200;
-                $response['data']['message'] = get_string('submissionontime', 'local_barcode');
-                return $response;
-            }
-
-            // Check for same day submission.
-
             if ($submission && 'submitted' === $submission->status) {
-                $lastmodified = new DateTime('@' . $submission->timemodified);
-                // Difference in days as a string.
-                $diff = $now->diff($lastmodified)->format('%a');
-
-                if ('0' === $diff) {
-                    $response['data']['code']    = 422;
-                    $response['data']['message'] = get_string('barcodesameday', 'local_barcode');
-                    return $response;
-                }
-
                 $response['data']['code']    = 422;
                 $response['data']['message'] = get_string('alreadysubmitted', 'local_barcode');
                 return $response;
             }
 
-            if ($submission) {
-                // Update the database with the submitted status.
-                $update               = new stdClass();
-                $update->id           = $submission->id;
-                $update->timemodified = $timestamp;
-                $update->status       = 'submitted';
-                $DB->update_record('assign_submission', $update);
-
-                $response['data']['code']    = 200;
-                $response['data']['message'] = get_string('submissionsaved', 'local_barcode');
-                return $response;
-            }
+            $submmissionresponse = $data->assign->save_barcode_submission($data);
+            return array_merge_recursive($response, $submmissionresponse);
         }
 
         // If the barcode was not found then return a 404.
 
         if (!$record) {
             $response['data']['code']    = 404;
-            $response['data']['message'] = 'Barcode not found';
+            $response['data']['message'] = get_string('barcodenotfound', 'local_barcode');
             return $response;
         }
 
