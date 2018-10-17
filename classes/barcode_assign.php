@@ -236,18 +236,18 @@ class barcode_assign extends assign {
     }
 
 
-
-
     /**
-     * Send an email to a single student confirming a submmission has been reverted to draft status.
+     * Send an email to the student confirming a submmission has been reverted to draft status.
      *
      * @param  object $data The data used to construct the email
      * @return void
      */
     public function send_student_revert_to_draft_email($data) {
+        global $CFG;
+
         $email = new stdClass();
         $email->userto          = $data->user;
-        $email->replyto         = get_config('noreplyaddress');
+        $email->replyto         = $CFG->noreplyaddress;
         $email->replytoname     = get_string('reverttodraftreplyname', 'local_barcode');
         $email->userfrom        = get_string('reverttodraftfromuser', 'local_barcode');
         $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');

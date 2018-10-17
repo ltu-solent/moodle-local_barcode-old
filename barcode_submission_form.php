@@ -79,6 +79,7 @@ class barcode_submission_form extends moodleform {
                            '',
                            array('class' => 'bc-form-item'),
                            array(0, 1));
+
         $mform->addHelpButton('reverttodraft', 'reverttodraft', 'local_barcode');
 
         if ($ontimeavailable) {
@@ -97,6 +98,7 @@ class barcode_submission_form extends moodleform {
                            '',
                            array('class' => 'bc-form-item'),
                            array(0, 1));
+
         $mform->addHelpButton('multiplescans', 'multiplescans', 'local_barcode');
         $mform->setType('multiplescans', PARAM_ALPHANUM);
         $mform->setDefault('multiplescans', $this->_customdata['multiplescans']);
