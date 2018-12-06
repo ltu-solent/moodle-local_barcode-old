@@ -50,7 +50,7 @@ class email_group_revert_to_draft extends \core\task\adhoc_task {
         $data = $this->get_custom_data();
         if ($groupmembers = groups_get_members($data->groupid)) {
             foreach ($groupmembers as $member) {
-                $email = new stdClass();
+                $email = new \stdClass();
                 $email->userto          = $member;
                 $email->replyto         = $CFG->noreplyaddress;
                 $email->replytoname     = get_string('reverttodraftreplyname', 'local_barcode');

@@ -25,9 +25,9 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function load() {
-        $('#id_barcode').focus();
-        document.getElementById('id_barcode').addEventListener('keypress', preventOnEnterSubmission, false);
-        document.getElementById('id_submitbutton').addEventListener('click', preventSubmission, false);
+        $('#local_barcode_id_barcode').focus();
+        document.getElementById('local_barcode_id_barcode').addEventListener('keypress', preventOnEnterSubmission, false);
+        document.getElementById('local_barcode_id_submitbutton').addEventListener('click', preventSubmission, false);
         addCombinedCountElement();
 
         var langStrings = str.get_strings([
@@ -61,15 +61,15 @@ define(['jquery', 'core/str'], function($, str) {
 
         if (barcode && !formIsValid()) {
             $('#feedback').html(strings[3]);
-            $('#feedback-group').addClass('bc-has-inform');
-            $('#feedback-group').removeClass('bc-has-danger');
-            $('#feedback-group').removeClass('bc-has-success');
+            $('#feedback-group').addClass('local-barcode-has-inform');
+            $('#feedback-group').removeClass('local-barcode-has-danger');
+            $('#feedback-group').removeClass('local-barcode-has-success');
         }
         // Make the ajax call to the webservice.
         if (barcode && formIsValid()) {
             saveBarcode(barcode);
         }
-        $('#id_barcode').focus();
+        $('#local_barcode_id_barcode').focus();
         return false;
     }
 
@@ -79,14 +79,14 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {string}     the new entered barcode
      */
     function getBarcode() {
-        return document.getElementById('id_barcode').value.trim();
+        return document.getElementById('local_barcode_id_barcode').value.trim();
     }
 
     /**
      * Reset the input text field to an empty value for the next entry
      */
     function resetBarcode() {
-        $('#id_barcode').val('');
+        $('#local_barcode_id_barcode').val('');
     }
 
     /**
@@ -197,15 +197,15 @@ define(['jquery', 'core/str'], function($, str) {
         if (code === 200) {
             if (hasReverted) {
                 submitted = strings[2];
-                $('#feedback-group').addClass('bc-has-success');
-                $('#feedback-group').removeClass('bc-has-danger');
-                $('#feedback-group').removeClass('bc-has-inform');
+                $('#feedback-group').addClass('local-barcode-has-success');
+                $('#feedback-group').removeClass('local-barcode-has-danger');
+                $('#feedback-group').removeClass('local-barcode-has-inform');
                 addTableRow('revert');
             } else {
                 submitted = strings[8];
-                $('#feedback-group').removeClass('bc-has-danger');
-                $('#feedback-group').removeClass('bc-has-inform');
-                $('#feedback-group').addClass('bc-has-success');
+                $('#feedback-group').removeClass('local-barcode-has-danger');
+                $('#feedback-group').removeClass('local-barcode-has-inform');
+                $('#feedback-group').addClass('local-barcode-has-success');
                 addTableRow('success');
             }
         }
@@ -216,9 +216,9 @@ define(['jquery', 'core/str'], function($, str) {
 
         if (code !== 200) {
             submitted  = strings[6];
-            $('#feedback-group').removeClass('bc-has-success');
-            $('#feedback-group').removeClass('bc-has-inform');
-            $('#feedback-group').addClass('bc-has-danger');
+            $('#feedback-group').removeClass('local-barcode-has-success');
+            $('#feedback-group').removeClass('local-barcode-has-inform');
+            $('#feedback-group').addClass('local-barcode-has-danger');
             addTableRow('fail');
             error = 1;
         }
@@ -232,16 +232,16 @@ define(['jquery', 'core/str'], function($, str) {
     function createTable() {
         var main = $('#region-main');
         var table = $('<table></table>');
-        table.attr('id', 'barcode-table');
+        table.attr('id', 'local-barcode-table');
         table.addClass('generaltable');
-        table.addClass('barcode-table');
+        table.addClass('local-barcode-table');
 
         var thead = table.append('<thead></thead>');
         var header = thead.append('<tr></tr>');
-        header.html('<th colspan="8" class="bc-th-left bc-sm-hide">' + strings[1] + ' - (<span id="id_count">' +
+        header.html('<th colspan="8" class="local-barcode-th-left local-barcode-sm-hide">' + strings[1] + ' - (<span id="local_barcode_id_count">' +
                 '0</span> ' + strings[6] + ')</th>' +
-                '<th colspan="17" class="bc-th-center">' + strings[0] + '</th>' +
-                '<th colspan="5" class="bc-th-right">' + strings[8] + '(<span id="submit_count">0</span>)</th>');
+                '<th colspan="17" class="local-barcode-th-center">' + strings[0] + '</th>' +
+                '<th colspan="5" class="local-barcode-th-right">' + strings[8] + '(<span id="local_barcode_id_submit_count">0</span>)</th>');
         table.append('<tbody id="tbody"></tbody>');
 
         main.append(table);
@@ -267,11 +267,11 @@ define(['jquery', 'core/str'], function($, str) {
             cell.append(span);
             // Hide the first cell on small screens.
             if (i === 0) {
-                cell.addClass('bc-sm-hide');
+                cell.addClass('local-barcode-sm-hide');
             }
             if (i === 2)  {
-                cssClass += ' bc-td-position';
-                span.addClass('visuallyhidden');
+                cssClass += ' local-barcode-td-position';
+                span.addClass('local-barcode-visuallyhidden');
                 cell.addClass(cssClass);
             }
             row.append(cell);
@@ -284,9 +284,9 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {array} The data in an array
      */
     function getData() {
-        var submissionClass = 'bc-ontime';
+        var submissionClass = 'local-barcode-ontime';
         if (islate) {
-            submissionClass = 'bc-islate';
+            submissionClass = 'local-barcode-islate';
         }
         return [
             getBarcode(),
@@ -306,8 +306,8 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function outputBarcodeCount(count) {
-        $('#id_count').html(count);
-        $('#scanned_count').html(count);
+        $('#local_barcode_id_count').html(count);
+        $('#local_barcode_id_scanned_count').html(count);
         return false;
     }
 
@@ -316,8 +316,8 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function outputSubmittedCount(count) {
-        $('#submit_count').html(count);
-        $('#submitted_count').html(count);
+        $('#local_barcode_id_submit_count').html(count);
+        $('#local_barcode_id_submitted_count').html(count);
         return false;
     }
 
@@ -326,7 +326,7 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {[type]} [description]
      */
     function setRevert() {
-        if (document.getElementById('id_reverttodraft').checked === true) {
+        if (document.getElementById('local_barcode_id_reverttodraft').checked === true) {
             revert = '1';
         } else {
             revert = '0';
@@ -338,12 +338,12 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function resetRevert() {
-        document.getElementById('id_reverttodraft').checked = false;
+        document.getElementById('local_barcode_id_reverttodraft').checked = false;
     }
 
     function setOnTime() {
-        if (document.getElementById('id_submitontime') &&
-                document.getElementById('id_submitontime').checked === true) {
+        if (document.getElementById('local_barcode_id_submitontime') &&
+                document.getElementById('local_barcode_id_submitontime').checked === true) {
             ontime = '1';
         } else {
             ontime = '0';
@@ -355,7 +355,7 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function resetOnTime() {
-        document.getElementById('id_submitontime').checked = false;
+        document.getElementById('local_barcode_id_submitontime').checked = false;
     }
 
     /**
@@ -363,17 +363,17 @@ define(['jquery', 'core/str'], function($, str) {
      * @return boolean
      */
     function getAllowMultipleScans() {
-        return document.getElementById('id_multiplescans').checked;
+        return document.getElementById('local_barcode_id_multiplescans').checked;
     }
 
     /**
      * Add the scanned and submitted counts next to the barcode input element
      */
     function addCombinedCountElement() {
-        $('#id_barcode').after(function() {
-            return '<span class="bc-combined-counts bc-inform-inline">(' +
-                       '<span id="scanned_count">0</span> / ' +
-                       '<span id="submitted_count">0</span>)' +
+        $('#local_barcode_id_barcode').after(function() {
+            return '<span class="local-barcode-combined-counts local-barcode-inform-inline">(' +
+                       '<span id="local_barcode_id_scanned_count">0</span> / ' +
+                       '<span id="local_barcode_id_submitted_count">0</span>)' +
                     '</span>';
         });
     }
@@ -386,25 +386,25 @@ define(['jquery', 'core/str'], function($, str) {
     function updateCounts(error) {
         var submitted,
             scanned = totalScanned();
-        if (error === 1 && !$('#submitted_count').hasClass('bc-error-inline')) {
+        if (error === 1 && !$('#local_barcode_id_submitted_count').hasClass('local-barcode-error-inline')) {
             applyErrorClass();
         }
         if (error === 0) {
             submitted = submittedBarcodes();
             outputSubmittedCount(submitted);
         }
-        if (!$('#scanned_count').hasClass('bc-success-inline')) {
-            $('#scanned_count').addClass('bc-success-inline');
+        if (!$('#local_barcode_id_scanned_count').hasClass('local-barcode-success-inline')) {
+            $('#local_barcode_id_scanned_count').addClass('local-barcode-success-inline');
         }
         outputBarcodeCount(scanned);
     }
 
     /**
-     * Apply the error class to the #submitted_count element if a barcode is not submitted
+     * Apply the error class to the #local_barcode_id_submitted_count element if a barcode is not submitted
      * @return {void}
      */
     function applyErrorClass() {
-        $('#submitted_count').addClass('bc-error-inline');
+        $('#local_barcode_id_submitted_count').addClass('local-barcode-error-inline');
     }
 
     // Closure to calculate the total number of scanned barcodes

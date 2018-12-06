@@ -65,7 +65,7 @@ if ($mform->is_cancelled()) {
     list($data->course, $data->cm) = get_course_and_cm_from_instance($data->barcoderecord->assignmentid, 'assign');
     $data->context          = context_module::instance($data->barcoderecord->cmid);
     $data->id               = $data->barcoderecord->cmid;
-    $data->assign           = new barcode_assign($data->context, $data->cm, $data->course);
+    $data->assign           = new local_barcode\barcode_assign($data->context, $data->cm, $data->course);
     $data->user             = $DB->get_record('user', array('id' => $data->barcoderecord->userid), $fields = '*', IGNORE_MISSING);
     $data->isopen           = $data->assign->student_submission_is_open($data->user->id, false, false, false);
     $data->groupid          = $data->barcoderecord->groupid;
@@ -138,7 +138,7 @@ $mform = new barcode_submission_form("./submissions.php?id=$id&action=scanning",
             ),
             'post',
             '',
-            'id="id_barcode_form"');
+            'id="local_barcode_id_barcode_form"');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('barcodeheading', 'local_barcode'), 2, null, 'page_heading');
 $mform->display();

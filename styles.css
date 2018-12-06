@@ -1,6 +1,6 @@
-.bc-has-danger,
-.bc-has-success,
-.bc-has-inform {
+.local-barcode-has-danger,
+.local-barcode-has-success,
+.local-barcode-has-inform {
   font-size: 1rem;
   line-height: 1.25;
   padding: .5rem .75rem;
@@ -9,22 +9,22 @@
   margin-bottom: 1rem;
 }
 
-.bc-has-danger {
+.local-barcode-has-danger {
   color: #d9534f;
   border-color: #d9534f;
 }
 
-.bc-has-success{
+.local-barcode-has-success{
   color: #5cb85c;
   border-color: #5cb85c;
 }
 
-.bc-has-inform {
+.local-barcode-has-inform {
   color: #333;
   background-color: #f5f5f5;
 }
 
-.visuallyhidden {
+.local-barcode-visuallyhidden {
   position: absolute;
   overflow: hidden;
   clip: rect(0 0 0 0);
@@ -32,42 +32,42 @@
   margin: -1px; padding: 0; border: 0;
 }
 
-.barcode-table {
+.local-barcode-table {
   table-layout: fixed;
   width: 100%;
 }
 
-.bc-text-center {
+.local-barcode-text-center {
   text-align: center;
 }
 
-.bc-th-left {
+.local-barcode-th-left {
   text-align: left;
   padding-left: 1rem;
 }
 
-.bc-th-center {
+.local-barcode-th-center {
   text-align: center;
 }
 
-.bc-th-right {
+.local-barcode-th-right {
   text-align: right;
   padding-right: 1rem;
 }
 
-.bc-td-position {
+.local-barcode-td-position {
   position: relative;
 }
 
 @media screen and (max-width: 460px) {
-  .bc-sm-hide {
+  .local-barcode-sm-hide {
     display: none;
   }
 }
 
-.bc-success:after,
-.bc-fail:after,
-.bc-revert:after {
+.local-barcode-success:after,
+.local-barcode-fail:after,
+.local-barcode-revert:after {
   position: absolute;
   top: 10px;
   right: 38px;
@@ -77,65 +77,65 @@
   padding-right: 6px;
 }
 
-.bc-success:after {
-  background: url([[pix:local_barcode|bc-success]]) no-repeat;
+.local-barcode-success:after {
+  background: url([[pix:local_barcode|local-barcode-success]]) no-repeat;
 }
 
-.bc-fail:after {
-  background: url([[pix:local_barcode|bc-fail]]) no-repeat;
+.local-barcode-fail:after {
+  background: url([[pix:local_barcode|local-barcode-fail]]) no-repeat;
 }
 
-.bc-revert:after {
-  background: url([[pix:local_barcode|bc-revert]]) no-repeat;
+.local-barcode-revert:after {
+  background: url([[pix:local_barcode|local-barcode-revert]]) no-repeat;
 }
 
-.bc-islate {
+.local-barcode-islate {
   color: #d9534f;
 }
 
-.bc-ontime {
+.local-barcode-ontime {
   color: #5cb85c;
 }
 
-.bc-form {
+.local-barcode-form {
   margin: 1rem auto;
 }
 
-.bc-combined-counts {
+.local-barcode-combined-counts {
   display: inline-block;
   margin-left: 1em;
   vertical-align: top;
 }
 
-.bc-success-inline {
+.local-barcode-success-inline {
   color: #5cb85c;
 }
 
-.bc-error-inline {
+.local-barcode-error-inline {
   color: #d9534f;
 }
 
-.bc-inform-inline {
+.local-barcode-inform-inline {
   color: #888;
 }
 
 @media screen and (max-width: 768px) {
-  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
-  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle,
-  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.fitemtitle {
+  div#fitem_local_barcode_id_reverttodraft.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle,
+  div#fitem_local_barcode_id_submitontime.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle,
+  div#fitem_local_barcode_id_multiplescans.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle {
     max-width: 265px;
   }
 
-  div#fitem_id_reverttodraft.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
-  div#fitem_id_submitontime.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox,
-  div#fitem_id_multiplescans.fitem.fitem_fadvcheckbox.bc-form-item > div.felement.fadvcheckbox {
+  div#fitem_local_barcode_id_reverttodraft.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox,
+  div#fitem_local_barcode_id_submitontime.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox,
+  div#fitem_local_barcode_id_multiplescans.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox {
     width: 20%;
     margin-top: 4px;
   }
 
-  input#id_reverttodraft,
-  input#id_submitontime,
-  input#id_multiplescans {
+  input#local_barcode_id_reverttodraft,
+  input#local_barcode_id_submitontime,
+  input#local_barcode_id_multiplescans {
     margin-top: 2px
   }
 }

@@ -95,7 +95,7 @@ class local_barcode_external extends external_api {
             $data->id = $record->cmid;
             list($data->course, $data->cm) = get_course_and_cm_from_instance($record->assignmentid, 'assign');
             $data->context = context_module::instance($record->cmid);
-            $data->assign = new barcode_assign($data->context, $data->cm, $data->course);
+            $data->assign = new local_barcode\barcode_assign($data->context, $data->cm, $data->course);
             $data->user = $DB->get_record('user', array('id' => $record->userid), '*', IGNORE_MISSING);
             $data->isopen = $data->assign->student_submission_is_open($data->user->id, false, false, false);
             $data->submissiontime = ($data->submitontime === '1') ? $record->duedate : time();
