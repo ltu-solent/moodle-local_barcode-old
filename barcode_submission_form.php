@@ -46,13 +46,13 @@ class barcode_submission_form extends moodleform {
         $mform = $this->_form;
 
         if (! empty($this->_customdata['error'])) {
-            $mform->addElement('html', '<div class="form-group bc-text-center bc-has-danger" id="feedback-group">');
+            $mform->addElement('html', '<div class="form-group local-barcode-text-center local-barcode-has-danger" id="feedback-group">');
             $mform->addElement('html', '<span class="form-control-feedback" id="feedback">'.$this->_customdata['error'].'</span>');
             $mform->addElement('html', '</div>');
         }
 
         if (! empty($this->_customdata['success'])) {
-            $mform->addElement('html', '<div class="form-group bc-text-center bc-has-success" id="feedback-group">');
+            $mform->addElement('html', '<div class="form-group local-barcode-text-center local-barcode-has-success" id="feedback-group">');
             $mform->addElement('html',
                                '<span class="form-control-feedback" id="feedback">'.$this->_customdata['success'].'</span>');
             $mform->addElement('html', '</div>');
@@ -61,7 +61,7 @@ class barcode_submission_form extends moodleform {
         // Default feedback section that's displayed when there's no error or success
         // message. Used for js feedback.
         if (empty($this->_customdata['success']) && empty($this->_customdata['error'])) {
-            $mform->addElement('html', '<div class="form-group bc-text-center" id="feedback-group">');
+            $mform->addElement('html', '<div class="form-group local-barcode-text-center" id="feedback-group">');
             $mform->addElement('html', '<span class="form-control-feedback" id="feedback"></span>');
             $mform->addElement('html', '</div>');
         }
@@ -71,13 +71,13 @@ class barcode_submission_form extends moodleform {
         $mform->setType('barcode', PARAM_ALPHANUM);
         $mform->setDefault('barcode', $this->_customdata['barcode']);
         $mform->setType('cmid', PARAM_INT);
-        $mform->addElement('html', '<div class="bc-form">');
+        $mform->addElement('html', '<div class="local-barcode-form">');
         $mform->addGroup($formgroup,  'barcodegroup', get_string('barcode', 'local_barcode'), ' ',  false);
         $mform->addElement('advcheckbox',
                            'reverttodraft',
                            get_string('reverttodraft', 'local_barcode'),
                            '',
-                           array('class' => 'bc-form-item'),
+                           array('class' => 'local-barcode-form-item'),
                            array(0, 1));
 
         $mform->addHelpButton('reverttodraft', 'reverttodraft', 'local_barcode');
@@ -87,7 +87,7 @@ class barcode_submission_form extends moodleform {
                                'submitontime',
                                get_string('allowsubmitontime', 'local_barcode'),
                                '',
-                               array('class' => 'bc-form-item'),
+                               array('class' => 'local-barcode-form-item'),
                                array(0, 1));
             $mform->addHelpButton('submitontime', 'submitontime', 'local_barcode');
         }
@@ -96,7 +96,7 @@ class barcode_submission_form extends moodleform {
                            'multiplescans',
                            get_string('allowmultiplescans', 'local_barcode'),
                            '',
-                           array('class' => 'bc-form-item'),
+                           array('class' => 'local-barcode-form-item'),
                            array(0, 1));
 
         $mform->addHelpButton('multiplescans', 'multiplescans', 'local_barcode');

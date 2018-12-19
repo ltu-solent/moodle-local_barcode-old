@@ -68,7 +68,7 @@ $string['reverttodraft_help']      = 'If an assignment has been submitted, this 
                                      'back to draft status';
 $string['scanned']                 = 'Scanned';
 $string['student']                 = 'Student';
-$string['submissionclosed']        = 'The assignment is closed for this submissions';
+$string['submissionclosed']        = 'The assignment is closed for this submission';
 $string['submissionnotfound']      = 'There\'s an error somewhere. This submission was not found in Moodle';
 $string['submissionontime']        = 'The submission has been submitted on time';
 $string['submissionsaved']         = 'Submission saved';

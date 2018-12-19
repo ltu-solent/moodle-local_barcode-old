@@ -35,7 +35,7 @@ $data = new stdClass();
 $data->id = optional_param('id', 0, PARAM_INT);
 list($data->course, $data->cm) = get_course_and_cm_from_cmid($data->id, 'assign');
 $data->context = context_module::instance($data->cm->id);
-$data->assign = new barcode_assign($data->context, $data->cm, $data->course);
+$data->assign = new local_barcode\barcode_assign($data->context, $data->cm, $data->course);
 require_login($data->course, true, $data->cm);
 require_capability('assignsubmission/barcode:scan', $data->context);
 
@@ -131,7 +131,7 @@ $mform = new barcode_submission_form("./submissions.php?id={$data->id}&action=sc
             ),
             'post',
             '',
-            'id="id_barcode_form"');
+            'id="local_barcode_id_barcode_form"');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('barcodeheading', 'local_barcode'), 2, null, 'page_heading');
 $mform->display();
