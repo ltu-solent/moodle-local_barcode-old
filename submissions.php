@@ -37,7 +37,7 @@ list($data->course, $data->cm) = get_course_and_cm_from_cmid($data->id, 'assign'
 $data->context = context_module::instance($data->cm->id);
 $data->assign = new local_barcode\barcode_assign($data->context, $data->cm, $data->course);
 require_login($data->course, true, $data->cm);
-require_capability('assignsubmission/barcode:scan', $data->context);
+require_capability('assignsubmission/physical:scan', $data->context);
 
 $mform   = new barcode_submission_form();
 $error   = '';

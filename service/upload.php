@@ -50,7 +50,7 @@ if ($data->id !== 0 && $data->id !== 1) {
     $context = context_system::instance();
 }
 
-require_capability('assignsubmission/barcode:scan', $context);
+require_capability('assignsubmission/physical:scan', $context);
 
 // Save the new submission to the database.
 $upload = new local_barcode\submission\upload_submission($data);

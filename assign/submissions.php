@@ -35,7 +35,7 @@ $context = context_system::instance();
 $id      = $context->id;
 
 require_login();
-require_capability('assignsubmission/barcode:scan', $context);
+require_capability('assignsubmission/physical:scan', $context);
 
 $PAGE->set_context($context);
 $PAGE->set_pagelayout('standard');

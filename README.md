@@ -20,4 +20,4 @@ Now navigate to Plugins -> Web services -> Manage Tokens and click add. Search f
 
 ### Navigation
 
-Users can access the barcode scanning interface if they have the plugins capability 'assignsubmission/barcode:scan'. There is a button added to the grading workflow which allows the user to navigate to the barcode scanning page. There is also a direct link to a scanning page which allows admins to set a direct link in Moodle for users to navigate to without accessing the grading workflow. The url is local/barcode/assign/submisison.php
+Users can access the barcode scanning interface if they have the plugins capability 'assignsubmission/physical:scan'. There is a button added to the grading workflow which allows the user to navigate to the barcode scanning page. There is also a direct link to a scanning page which allows admins to set a direct link in Moodle for users to navigate to without accessing the grading workflow. The url is local/barcode/assign/submisison.php

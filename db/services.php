@@ -34,7 +34,7 @@ $functions = array(
                             (Administration > Plugins > Webservices > API documentation)',
         'type'         => 'write',
         'ajax'         => true,
-        'capabilities' => 'assignsubmission/barcode:scan',
+        'capabilities' => 'assignsubmission/physical:scan',
         'services'     => array(MOODLE_OFFICIAL_MOBILE_SERVICE)
     )
 );
@@ -43,7 +43,7 @@ $services = array(
     'Barcode Scanning' => array(
         'functions'       => array ('local_barcode_save_barcode_submission'),
         'restrictedusers' => 1,
-        'requiredcapability' => 'assignsubmission/barcode:scan',
+        'requiredcapability' => 'assignsubmission/physical:scan',
         'enabled'         => 1,
         'shortname'       => 'barcode'
     )
