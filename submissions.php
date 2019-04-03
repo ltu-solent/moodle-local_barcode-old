@@ -51,7 +51,7 @@ if ($mform->is_cancelled()) {
 } elseif ($data->formdata = $mform->get_submitted_data()) {
     // Process the barcode & submission.
     $conditions = array('barcode' => $data->formdata->barcode);
-    $data->barcoderecord = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+    $data->barcoderecord = $DB->get_record('assignsubmission_physical', $conditions, '*', IGNORE_MISSING);
     $data->user             = $DB->get_record('user', array('id' => $data->barcoderecord->userid), $fields = '*', IGNORE_MISSING);
     $data->isopen           = $data->assign->student_submission_is_open($data->user->id, false, false, false);
     $data->submissiontime   = ($data->formdata->submitontime === '1') ? $record->duedate : time();

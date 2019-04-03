@@ -61,7 +61,7 @@ if ($mform->is_cancelled()) {
 } elseif ($data->formdata = $mform->get_submitted_data()) {
     // Process the barcode & submission.
     $conditions = array('barcode' => $data->formdata->barcode);
-    $data->barcoderecord = $DB->get_record('assignsubmission_barcode', $conditions, '*', IGNORE_MISSING);
+    $data->barcoderecord = $DB->get_record('assignsubmission_physical', $conditions, '*', IGNORE_MISSING);
     list($data->course, $data->cm) = get_course_and_cm_from_instance($data->barcoderecord->assignmentid, 'assign');
     $data->context          = context_module::instance($data->barcoderecord->cmid);
     $data->id               = $data->barcoderecord->cmid;
