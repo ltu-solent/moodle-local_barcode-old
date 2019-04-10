@@ -25,9 +25,28 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function load() {
-        $('#local_barcode_id_barcode').focus();
-        document.getElementById('local_barcode_id_barcode').addEventListener('keypress', preventOnEnterSubmission, false);
-        document.getElementById('local_barcode_id_submitbutton').addEventListener('click', preventSubmission, false);
+        $('.path-local-barcode #id_barcode').focus();
+        $('.path-local-barcode #id_barcode').keypress(function(ev) {
+            var key = ev.which || ev.keyCode;
+            if (key === 13) {
+                ev.stopPropagation();
+                ev.preventDefault();
+                setRevert();
+                setOnTime();
+                submitBarcode(ev);
+                return false;
+            }
+        });
+
+        $('.path-local-barcode #id_submitbutton').on('click', function(ev) {
+            ev.stopPropagation();
+            ev.preventDefault();
+            setRevert();
+            setOnTime();
+            submitBarcode(ev);
+            return false;
+        });
+
         addCombinedCountElement();
 
         var langStrings = str.get_strings([
@@ -69,7 +88,7 @@ define(['jquery', 'core/str'], function($, str) {
         if (barcode && formIsValid()) {
             saveBarcode(barcode);
         }
-        $('#local_barcode_id_barcode').focus();
+        $('.path-local-barcode #id_barcode').focus();
         return false;
     }
 
@@ -79,49 +98,14 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {string}     the new entered barcode
      */
     function getBarcode() {
-        return document.getElementById('local_barcode_id_barcode').value.trim();
+        return $('.path-local-barcode #id_barcode').val().trim();
     }
 
     /**
      * Reset the input text field to an empty value for the next entry
      */
     function resetBarcode() {
-        $('#local_barcode_id_barcode').val('');
-    }
-
-    /**
-     * Prevent the form from submmitting while the user is hitting enter during the
-     * process of entering more than one barcode
-     *
-     * @param  {object} ev      the keypress event
-     * @return {boolean}
-     */
-    function preventOnEnterSubmission(ev) {
-        var key = ev.which || ev.keyCode;
-        if (key === 13) {
-            ev.stopPropagation();
-            ev.preventDefault();
-            setRevert();
-            setOnTime();
-            submitBarcode(ev);
-        }
-        return false;
-    }
-
-    /**
-     * Prevent the form from submmitting while the user is submitting the form by interacting
-     * with the submit button
-     *
-     * @param  {object} ev   The submit event
-     * @return {boolean}
-     */
-    function preventSubmission(ev) {
-        ev.stopPropagation();
-        ev.preventDefault();
-        setRevert();
-        setOnTime();
-        submitBarcode(ev);
-        return false;
+        $('.path-local-barcode #id_barcode').val('');
     }
 
     /**
@@ -238,10 +222,12 @@ define(['jquery', 'core/str'], function($, str) {
 
         var thead = table.append('<thead></thead>');
         var header = thead.append('<tr></tr>');
-        header.html('<th colspan="8" class="local-barcode-th-left local-barcode-sm-hide">' + strings[1] + ' - (<span id="local_barcode_id_count">' +
+        header.html('<th colspan="8" class="local-barcode-th-left local-barcode-sm-hide">' + strings[1] +
+                ' - (<span id="local_barcode_id_count">' +
                 '0</span> ' + strings[6] + ')</th>' +
                 '<th colspan="17" class="local-barcode-th-center">' + strings[0] + '</th>' +
-                '<th colspan="5" class="local-barcode-th-right">' + strings[8] + '(<span id="local_barcode_id_submit_count">0</span>)</th>');
+                '<th colspan="5" class="local-barcode-th-right">' + strings[8] +
+                '(<span id="local_barcode_id_submit_count">0</span>)</th>');
         table.append('<tbody id="tbody"></tbody>');
 
         main.append(table);
@@ -252,7 +238,7 @@ define(['jquery', 'core/str'], function($, str) {
      * @param {string} css  The css class condition
      */
     function addTableRow(css) {
-        var cssClass = 'bc-' + css;
+        var cssClass = 'local-barcode-' + css;
         var colspans = [8, 17, 5];
         var arr = getData();
         var tbody = $('#tbody');
@@ -326,7 +312,7 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {[type]} [description]
      */
     function setRevert() {
-        if (document.getElementById('local_barcode_id_reverttodraft').checked === true) {
+        if ($('.path-local-barcode #id_reverttodraft').is(':checked')) {
             revert = '1';
         } else {
             revert = '0';
@@ -338,12 +324,12 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function resetRevert() {
-        document.getElementById('local_barcode_id_reverttodraft').checked = false;
+        $('.path-local-barcode #id_reverttodraft').prop('checked', false);
     }
 
     function setOnTime() {
-        if (document.getElementById('local_barcode_id_submitontime') &&
-                document.getElementById('local_barcode_id_submitontime').checked === true) {
+        if ($('.path-local-barcode #id_submitontime') &&
+                $('.path-local-barcode #id_submitontime').is('checked')) {
             ontime = '1';
         } else {
             ontime = '0';
@@ -355,7 +341,7 @@ define(['jquery', 'core/str'], function($, str) {
      * @return {void}
      */
     function resetOnTime() {
-        document.getElementById('local_barcode_id_submitontime').checked = false;
+        $('.path-local-barcode #id_submitontime').prop('checked', false);
     }
 
     /**
@@ -363,14 +349,14 @@ define(['jquery', 'core/str'], function($, str) {
      * @return boolean
      */
     function getAllowMultipleScans() {
-        return document.getElementById('local_barcode_id_multiplescans').checked;
+        return $('.path-local-barcode #id_multiplescans').is('checked');
     }
 
     /**
      * Add the scanned and submitted counts next to the barcode input element
      */
     function addCombinedCountElement() {
-        $('#local_barcode_id_barcode').after(function() {
+        $('.path-local-barcode #id_barcode').after(function() {
             return '<span class="local-barcode-combined-counts local-barcode-inform-inline">(' +
                        '<span id="local_barcode_id_scanned_count">0</span> / ' +
                        '<span id="local_barcode_id_submitted_count">0</span>)' +
