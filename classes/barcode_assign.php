@@ -26,6 +26,8 @@
 namespace local_barcode;
 
 use \mod_assign\output\grading_app;
+use \stdClass;
+use \completion_info;
 
 defined('MOODLE_INTERNAL') || die();
 
@@ -42,7 +44,7 @@ require_once($CFG->dirroot . '/lib/grouplib.php');
  * @author    Dez Glidden <dez.glidden@catalyst-eu.net>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class barcode_assign extends assign {
+class barcode_assign extends \assign {
     /**
      * Is this assignment open for submissions?
      *
@@ -251,7 +253,7 @@ class barcode_assign extends assign {
         $email->userto          = $data->user;
         $email->replyto         = $CFG->noreplyaddress;
         $email->replytoname     = get_string('reverttodraftreplyname', 'local_barcode');
-        $email->userfrom        = get_string('reverttodraftfromuser', 'local_barcode');
+        $email->userfrom        = $CFG->noreplyaddress;
         $email->subject         = get_string('reverttodraftemailsubject', 'local_barcode');
         $email->fullmessage     = get_string('reverttodraftemailnonhtml',
                                     'local_barcode',

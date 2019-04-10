@@ -74,7 +74,7 @@ function local_barcode_get_email_data($data) {
     $emaildata->user     = $data->user;
     $emaildata->linkurl  = $CFG->wwwroot . '/mod/assign/view.php?id=' . $data->id;
     $emaildata->linktext = $data->assign->get_instance()->name;
-    $emaildata->groupid  = $data->barcoderecord->groupid;
+    $emaildata->groupid  = $data->groupid;
     return $emaildata;
 }
 

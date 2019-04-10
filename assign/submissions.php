@@ -25,11 +25,11 @@
 require_once('../../../config.php');
 require_once($CFG->dirroot . '/lib/pagelib.php');
 require_once($CFG->dirroot . '/mod/assign/locallib.php');
-require_once('../barcode_submission_form.php');
-require_once('../classes/barcode_assign.php');
-require_once('../classes/event/submission_updated.php');
-require_once('../classes/task/email_group.php');
-require_once('../locallib.php');
+require_once($CFG->dirroot . '/local/barcode/barcode_submission_form.php');
+require_once($CFG->dirroot . '/local/barcode/classes/barcode_assign.php');
+require_once($CFG->dirroot . '/local/barcode/classes/event/submission_updated.php');
+require_once($CFG->dirroot . '/local/barcode/classes/task/email_group.php');
+require_once($CFG->dirroot . '/local/barcode/locallib.php');
 
 $context = context_system::instance();
 $id      = $context->id;
