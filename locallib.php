@@ -74,7 +74,7 @@ function local_barcode_get_email_data($data) {
     $emaildata->user     = $data->user;
     $emaildata->linkurl  = $CFG->wwwroot . '/mod/assign/view.php?id=' . $data->id;
     $emaildata->linktext = $data->assign->get_instance()->name;
-    $emaildata->groupid  = $data->groupid;
+    $emaildata->groupid  = $data->barcoderecord->groupid;
     return $emaildata;
 }
 
@@ -203,7 +203,7 @@ function local_barcode_get_assignment_submmission($barcode) {
                    u.firstname,
                    u.lastname,
                    m.id AS participantid
-              FROM {assignsubmission_physical} b
+              FROM {assignsubmission_barcode} b
               JOIN {assign} a ON b.assignmentid = a.id
               JOIN {course} c ON b.courseid = c.id
               JOIN {user} u ON b.userid = u.id
