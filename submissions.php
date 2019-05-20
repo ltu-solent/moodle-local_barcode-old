@@ -131,7 +131,7 @@ $mform = new barcode_submission_form("./submissions.php?id={$data->id}&action=sc
             ),
             'post',
             '',
-            'id="local_barcode_id_barcode_form"');
+            'id="id_barcode_form"');
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('barcodeheading', 'local_barcode'), 2, null, 'page_heading');
 $mform->display();

@@ -54,10 +54,13 @@ class local_barcode_external extends external_api {
     ) {
         global $DB, $USER, $CFG;
         // Clense parameters.
-        $params = self::validate_parameters(
-            self::save_barcode_submission_parameters(),
-            array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
-
+        // $params = self::validate_parameters(
+        //     self::save_barcode_submission_parameters(),
+        //     array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
+        $params = [];
+        $params['barcode'] = $barcode;
+$params['revert'] = $revert;
+$params['ontime'] = $ontime;
         $data = new stdClass();
         // Remove extra params as they aren't used in $DB->get_record_sql, the barcode is.
         $data->revert = $params['revert'];
@@ -95,7 +98,7 @@ class local_barcode_external extends external_api {
             $data->id = $record->cmid;
             list($data->course, $data->cm) = get_course_and_cm_from_instance($record->assignmentid, 'assign');
             $data->context = context_module::instance($record->cmid);
-            $data->assign = new local_barcode\barcode_assign($data->context, $data->cm, $data->course);
+            $data->assign = new barcode_assign($data->context, $data->cm, $data->course);
             $data->user = $DB->get_record('user', array('id' => $record->userid), '*', IGNORE_MISSING);
             $data->isopen = $data->assign->student_submission_is_open($data->user->id, false, false, false);
             $data->submissiontime = ($data->submitontime === '1') ? $record->duedate : time();
@@ -107,6 +110,7 @@ class local_barcode_external extends external_api {
             $response['data']['duedate']               = date('jS F, \'y G:i', $record->duedate);
             $response['data']['submissiontime']        = date('jS F, \'y G:i:s', $data->submissiontime);
             $response['data']['assignmentdescription'] = strip_tags($record->assignmentdescription);
+            $timestamp = time();
             $response['data']['islate']                = (($record->duedate - $timestamp) < 0) ? 1 : 0;
 
             // Get the username details.
@@ -183,9 +187,9 @@ class local_barcode_external extends external_api {
     public static function save_barcode_submission_parameters() {
         return new external_function_parameters(
             array(
-                'barcode' => new external_value(PARAM_TEXT, 'barcode'),
-                'revert'  => new external_value(PARAM_TEXT, 'revert'),
-                'ontime'  => new external_value(PARAM_TEXT, 'ontime'),
+                'barcode' => new external_value(PARAM_NOTAGS, 'barcode'),
+                'revert'  => new external_value(PARAM_NOTAGS, 'revert'),
+                'ontime'  => new external_value(PARAM_NOTAGS, 'ontime'),
             )
         );
     }
