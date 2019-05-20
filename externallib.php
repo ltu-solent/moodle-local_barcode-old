@@ -54,13 +54,10 @@ class local_barcode_external extends external_api {
     ) {
         global $DB, $USER, $CFG;
         // Clense parameters.
-        // $params = self::validate_parameters(
-        //     self::save_barcode_submission_parameters(),
-        //     array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
-        $params = [];
-        $params['barcode'] = $barcode;
-$params['revert'] = $revert;
-$params['ontime'] = $ontime;
+        $params = self::validate_parameters(
+            self::save_barcode_submission_parameters(),
+            array('barcode' => $barcode, 'revert' => $revert, 'ontime' => $ontime));
+
         $data = new stdClass();
         // Remove extra params as they aren't used in $DB->get_record_sql, the barcode is.
         $data->revert = $params['revert'];
