@@ -1,0 +1,132 @@
+.local-barcode-has-danger,
+.local-barcode-has-success,
+.local-barcode-has-inform {
+  font-size: 1rem;
+  line-height: 1.25;
+  padding: .5rem .75rem;
+  border: 2px solid #ccc;
+  border-radius: .25rem;
+  margin-bottom: 1rem;
+}
+
+.local-barcode-has-danger {
+  color: #d9534f;
+  border-color: #d9534f;
+}
+
+.local-barcode-has-success{
+  color: #5cb85c;
+  border-color: #5cb85c;
+}
+
+.local-barcode-has-inform {
+  color: #333;
+  background-color: #f5f5f5;
+}
+
+.local-barcode-visuallyhidden {
+  position: absolute;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  height: 1px; width: 1px;
+  margin: -1px; padding: 0; border: 0;
+}
+
+.local-barcode-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+.local-barcode-text-center {
+  text-align: center;
+}
+
+.local-barcode-th-left {
+  text-align: left;
+  padding-left: 1rem;
+}
+
+.local-barcode-th-center {
+  text-align: center;
+}
+
+.local-barcode-th-right {
+  text-align: right;
+  padding-right: 1rem;
+}
+
+.local-barcode-td-position {
+  position: relative;
+}
+
+@media screen and (max-width: 460px) {
+  .local-barcode-sm-hide {
+    display: none;
+  }
+}
+
+.bc-success {
+  background: url([[pix:local_barcode|local-barcode-success]]) no-repeat;
+  background-position: center;
+}
+
+.bc-fail {
+  background: url([[pix:local_barcode|local-barcode-fail]]) no-repeat;
+  background-position: center;
+}
+
+.bc-revert {
+  background: url([[pix:local_barcode|local-barcode-revert]]) no-repeat;
+  background-position: center;
+}
+
+.local-barcode-islate {
+  color: #d9534f;
+}
+
+.local-barcode-ontime {
+  color: #5cb85c;
+}
+
+.local-barcode-form {
+  margin: 1rem auto;
+}
+
+.local-barcode-combined-counts {
+  display: inline-block;
+  margin-left: 1em;
+  vertical-align: top;
+}
+
+.local-barcode-success-inline {
+  color: #5cb85c;
+}
+
+.local-barcode-error-inline {
+  color: #d9534f;
+}
+
+.local-barcode-inform-inline {
+  color: #888;
+}
+
+@media screen and (max-width: 768px) {
+  div#fitem_local_barcode_id_reverttodraft.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle,
+  div#fitem_local_barcode_id_submitontime.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle,
+  div#fitem_local_barcode_id_multiplescans.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.fitemtitle {
+    max-width: 265px;
+  }
+
+  div#fitem_local_barcode_id_reverttodraft.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox,
+  div#fitem_local_barcode_id_submitontime.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox,
+  div#fitem_local_barcode_id_multiplescans.fitem.fitem_fadvcheckbox.local-barcode-form-item > div.felement.fadvcheckbox {
+    width: 20%;
+    margin-top: 4px;
+  }
+
+  input#local_barcode_id_reverttodraft,
+  input#local_barcode_id_submitontime,
+  input#local_barcode_id_multiplescans {
+    margin-top: 2px
+  }
+}
