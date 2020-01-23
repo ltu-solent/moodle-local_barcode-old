@@ -106,6 +106,6 @@ class barcode_submission_form extends moodleform {
         $mform->hardFreeze('multiplescans');
         $mform->addElement('html', '</div>');
         $mform->addElement('hidden', 'cmid', $this->_customdata['cmid']);
-        $this->add_action_buttons(true, get_string('submit', 'local_barcode'));
+        $this->add_action_buttons(false, get_string('submit', 'local_barcode'));
     }
 }
