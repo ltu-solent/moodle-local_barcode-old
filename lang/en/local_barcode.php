@@ -85,7 +85,7 @@ $string['submissionnotfound']      = 'There\'s an error somewhere. This submissi
 $string['submissionontime']        = 'The submission has been submitted on time';
 $string['submissionsaved']         = 'Submission saved';
 $string['submissionscanned']       = 'A physical submission has been scanned';
-$string['submit']                  = 'Finish';
+$string['submit']                  = 'Submit';
 $string['submitontime']            = 'Allow late submission';
 $string['submitontime_help']       = 'By selecting this checkbox, the submission will be submitted on the due date and time, ' .
                                      'marking the assignment as submitted on time and not as a late submission.';

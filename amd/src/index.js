@@ -44,12 +44,10 @@ define(['jquery', 'core/str'], function($, str) {
             {key: 'student', component: 'local_barcode'},
             {key: 'submitted', component: 'local_barcode'}
         ]);
-        
         $.when(langStrings).done(function(localizedStrings) {
             strings = localizedStrings;
             createTable();
         });
-        
     }
 
     /**
@@ -189,7 +187,6 @@ define(['jquery', 'core/str'], function($, str) {
             dataType: "json"
         });
         // feedback();
-        
     }
 
     /**
@@ -456,5 +453,4 @@ define(['jquery', 'core/str'], function($, str) {
             link = direct;
         },
     };
-    
 });
