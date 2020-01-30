@@ -205,14 +205,14 @@ class barcode_assign extends assign {
         if (!$user = $DB->get_record('user', array('id' => $data->user->id), '*', MUST_EXIST)) {
             return;
         }
-
-        // Late submission check.
-        $late = $this->get_instance()->duedate && ($this->get_instance()->duedate < $submission->timemodified);
-
-        if (!$this->get_instance()->sendnotifications && !($late && $this->get_instance()->sendlatenotifications)) {
-            return;
-        }
-
+// SU_AMEND START - Barcode: Late date check preventing notifications
+        // Late submission check. BROKEN!!
+        // $late = $this->get_instance()->duedate && ($this->get_instance()->duedate < $submission->timemodified);
+        //
+        // if (!$this->get_instance()->sendnotifications && !($late && $this->get_instance()->sendlatenotifications)) {
+        //     return;
+        // }
+// SU_AMEND END
         // If notifications have to be sent to the graders then send the notification.
         if ($this->get_instance()->sendnotifications) {
             if ($notifyusers = $this->get_notifiable_users($data)) {
@@ -246,7 +246,7 @@ class barcode_assign extends assign {
      */
     public function send_student_revert_to_draft_email($data) {
         global $CFG;
-        
+
         $email = new stdClass();
         $email->userto          = $data->user;
         $email->replyto         = $CFG->noreplyaddress;
