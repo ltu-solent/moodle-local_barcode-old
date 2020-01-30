@@ -52,7 +52,7 @@ $string['privacy:metadata']        = 'The local barcode plugin only referecnes e
 $string['requiredbarcode']         = 'At least 1 barcode is required.';
 $string['reverttodraft']           = 'Revert this submission back to draft';
 
-// SSU AMEND START
+// SU_AMEND START - Barcode: Updated email strings
 //$string['reverttodraftemail']      = 'Your physical assignment has been reverted to draft, perhaps because it ' .
 //                                     'has been handed back to you for further work. You will now need to re-submit ' .
 //                                     'the assignment before the deadline. If you have any questions about this please ' .
@@ -70,7 +70,7 @@ $string['reverttodraftemailnonhtml'] = 'The physical assignment submission liste
                                         '. You will now need to ensure it is resubmitted before the deadline. If you' .
                                         ' have any questions about this assessment please speak with your tutor' .
                                         '. The affected assessment is <a href="{$a->linkurl}">{$a->linktext}</a>';
-// SSU AMEND END
+// SU_AMEND END
 
 $string['reverttodraftemailsubject'] = 'Submission reverted to draft';
 $string['reverttodraftfromuser']   = '(System) Submission reverted to draft';
