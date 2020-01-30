@@ -261,7 +261,9 @@ class barcode_assign extends assign {
                                     'local_barcode',
                                     ['timecreated'=>userdate($data->submissiontime, '%d %B %Y, %I:%M:%S %p') , 'linkurl' => $data->emaildata->linkurl, 'linktext' => $data->emaildata->linktext]) .
                                   '</p>';
-        email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
+// SU_AMEND START - Barcode: Prevent revert to draft email
+        //email_to_user($email->userto, $email->userfrom, $email->subject, $email->fullmessage, $email->fullmessagehtml, '', '');
+// SU_AMEND END
     }
 
 
